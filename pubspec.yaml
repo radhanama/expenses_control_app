@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   crypto: ^3.0.6
   flutter_secure_storage: ^9.2.4
+  provider:
+  sqflite_common_ffi:
   expenses_control:
     git:
       url: git@github.com:radhanama/expenses_control.git
