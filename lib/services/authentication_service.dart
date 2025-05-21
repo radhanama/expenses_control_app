@@ -5,6 +5,8 @@
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:expenses_control/data/usuario_repository.dart';
+import 'package:expenses_control/models/usuario.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
