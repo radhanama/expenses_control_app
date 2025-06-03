@@ -16,6 +16,7 @@ void main() async {
     sqfliteFfiInit(); // loads native sqlite3
     databaseFactory = databaseFactoryFfi;
   }
+  
 
   // 1) open (or create) the SQLite file
   final db = await openAppDatabase();
