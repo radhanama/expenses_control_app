@@ -14,3 +14,12 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Dev Container
+
+This repository includes a [devcontainer](https://containers.dev/) configuration.
+It uses the `ghcr.io/cirruslabs/flutter:stable` image which provides Flutter with
+the Android SDK and common desktop dependencies preinstalled. The container also
+downloads and installs Android Studio so that all `flutter doctor` checks pass.
+After opening the project in a container-aware editor like VS Code, the
+environment will run `flutter doctor` automatically to verify your setup.
