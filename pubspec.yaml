@@ -41,7 +41,7 @@ dependencies:
   sqflite_common_ffi:
   expenses_control:
     git:
-      url: git@github.com:radhanama/expenses_control.git
+      url: https://github.com/radhanama/expenses_control_framework.git
       ref: master 
 
 dev_dependencies:
