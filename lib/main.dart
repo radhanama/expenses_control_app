@@ -6,12 +6,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'databases/database.dart';
 import 'services/authentication_service.dart';
-import 'view/usuario_view.dart';
-import 'view_model/usuario_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'package:expenses_control_app/view/main_view.dart';
+import 'view_model/usuario_view_model.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR', null);
+
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit(); // loads native sqlite3
     databaseFactory = databaseFactoryFfi;
@@ -55,7 +59,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const UsuarioView(),
+      home: MainView(),
     );
   }
 }
