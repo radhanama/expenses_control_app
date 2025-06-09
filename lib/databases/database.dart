@@ -22,6 +22,9 @@ Future<Database> openAppDatabase() async {
     path,
     version: 1,
     onCreate: _onCreate,
+    onOpen: (db) async {
+      await _seedData(db);
+    },
     onUpgrade: _onUpgrade,
   );
 }
@@ -89,6 +92,8 @@ Future<void> _onCreate(Database db, int version) async {
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
   ''');
+
+  await _seedData(db);
 }
 
 /// Handle schema upgrades here (bump [version] ↑ then add cases).
@@ -96,5 +101,23 @@ Future<void> _onUpgrade(Database db, int oldV, int newV) async {
   if (oldV < 2) {
     // Example:
     // await db.execute('ALTER TABLE gastos ADD COLUMN observacao TEXT;');
+  }
+}
+
+Future<void> _seedData(Database db) async {
+  final count = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM categorias'));
+  if (count == 0) {
+    final batch = db.batch();
+    const categorias = [
+      {'titulo': 'Alimentação', 'descricao': 'Gastos com comida'},
+      {'titulo': 'Transporte', 'descricao': 'Deslocamentos'},
+      {'titulo': 'Lazer', 'descricao': 'Atividades de lazer'},
+      {'titulo': 'Outros', 'descricao': 'Outras despesas'},
+    ];
+    for (final c in categorias) {
+      batch.insert('categorias', c);
+    }
+    await batch.commit(noResult: true);
   }
 }
