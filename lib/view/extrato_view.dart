@@ -1,7 +1,6 @@
 // lib/view/extrato_view.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/categoria_view_model.dart';
@@ -57,10 +56,16 @@ class _ExtratoViewState extends State<ExtratoView> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: Offset(0, 1))],
+              boxShadow: [
+                BoxShadow(
+                    blurRadius: 2,
+                    color: Colors.grey.withOpacity(0.2),
+                    offset: Offset(0, 1))
+              ],
             ),
             child: Center(
-              child: Text('Total no mês: R\$ ${totalGasto.toStringAsFixed(2)}', style: TextStyle(fontSize: 18)),
+              child: Text('Total no mês: R\$ ${totalGasto.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 18)),
             ),
           ),
           Expanded(
@@ -74,30 +79,13 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildMonthPicker(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        // Chame showMonthPicker diretamente, não como um método de 'this'
-        showMonthPicker(
-          context: context,
-          initialDate: _selectedMonth,
-          firstDate: DateTime(2000), // Adicione um range para evitar erros
-          lastDate: DateTime(2100),  // Adicione um range para evitar erros
-        ).then((date) {
-          if (date != null) {
-            setState(() {
-              _selectedMonth = date;
-            });
-          }
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
-            Icon(Icons.arrow_drop_down),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
+          Icon(Icons.arrow_drop_down),
+        ],
       ),
     );
   }
@@ -109,7 +97,8 @@ class _ExtratoViewState extends State<ExtratoView> {
         return DropdownButton<String>(
           value: _selectedCategory,
           items: items
-              .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+              .map((category) =>
+                  DropdownMenuItem(value: category, child: Text(category)))
               .toList(),
           onChanged: (value) {
             setState(() {
@@ -127,7 +116,12 @@ class _ExtratoViewState extends State<ExtratoView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+              blurRadius: 2,
+              color: Colors.grey.withOpacity(0.2),
+              offset: Offset(0, 1))
+        ],
       ),
       child: Table(
         columnWidths: {
@@ -153,15 +147,17 @@ class _ExtratoViewState extends State<ExtratoView> {
               _buildTableCell('Local', isHeader: true),
             ],
           ),
-          ...gastos.map((g) => TableRow(children: [
-            _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
-            _buildTableCell('-'),
-            _buildTableCell(g.categoria),
-            _buildTableCell('-'),
-            _buildTableCell('-'),
-            _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),
-            _buildTableCell(g.local),
-          ])).toList(),
+          ...gastos
+              .map((g) => TableRow(children: [
+                    _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
+                    _buildTableCell('-'),
+                    _buildTableCell(g.categoria),
+                    _buildTableCell('-'),
+                    _buildTableCell('-'),
+                    _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),
+                    _buildTableCell(g.local),
+                  ]))
+              .toList(),
         ],
       ),
     );

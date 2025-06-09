@@ -62,75 +62,86 @@ class _CategoriaViewState extends State<CategoriaView> {
           itemCount: vm.categorias.length,
           itemBuilder: (context, index) {
             final category = vm.categorias[index];
-          return Card(
-            margin: EdgeInsets.only(bottom: 8.0),
-            elevation: 1,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(category.titulo, style: TextStyle(fontSize: 16)),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              TextEditingController _editController = TextEditingController(text: category.titulo);
-                              return AlertDialog(
-                                title: Text('Renomear Categoria'),
-                                content: TextField(
-                                  controller: _editController,
-                                  decoration: InputDecoration(hintText: 'Novo nome da categoria'),
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: Text('Cancelar'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
+            return Card(
+              margin: EdgeInsets.only(bottom: 8.0),
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(category.titulo, style: TextStyle(fontSize: 16)),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                TextEditingController _editController =
+                                    TextEditingController(
+                                        text: category.titulo);
+                                return AlertDialog(
+                                  title: Text('Renomear Categoria'),
+                                  content: TextField(
+                                    controller: _editController,
+                                    decoration: InputDecoration(
+                                        hintText: 'Novo nome da categoria'),
                                   ),
-                                  TextButton(
-                                    child: Text('Salvar'),
-                                    onPressed: () {
-                                      // Não implementado: edição de categoria
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: Text('Cancelar'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text('Salvar'),
+                                      onPressed: () {
+                                        // Não implementado: edição de categoria
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                          ),
+                          child: Text('Editar', style: TextStyle(fontSize: 12)),
                         ),
-                        child: Text('Editar', style: TextStyle(fontSize: 12)),
-                      ),
-                      SizedBox(width: 4),
-                      ElevatedButton(
-                        onPressed: () => _deleteCategory(context, category.id ?? 0),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        SizedBox(width: 4),
+                        ElevatedButton(
+                          onPressed: () =>
+                              _deleteCategory(context, category.id ?? 0),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                          ),
+                          child:
+                              Text('Excluir', style: TextStyle(fontSize: 12)),
                         ),
-                        child: Text('Excluir', style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
