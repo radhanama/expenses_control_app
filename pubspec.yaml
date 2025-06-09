@@ -31,25 +31,20 @@ dependencies:
   flutter:
     sdk: flutter
 
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   crypto: ^3.0.6
   flutter_secure_storage: ^9.2.4
   provider: ^6.1.2
   sqflite_common_ffi: ^2.3.3
   expenses_control:
-    git:
-      url: https://github.com/radhanama/expenses_control_framework.git
-      ref: master 
+    path: C:/Users/pedra/OneDrive/drive-puc/atualgithub/expenses_control_framework
   html: ^0.15.0
   http: ^1.2.1
-  fl_chart: ^0.68.0 # Adicione esta linha (verifique a versão mais recente em pub.dev)
+  fl_chart: ^0.68.0
   intl: ^0.20.2 # Mantenha esta versão para compatibilidade com flutter_localizations
   month_picker_dialog: 6.2.3 # Adicione novamente se você quiser usá-lo
-
-
+  mobile_scanner: ^5.1.1 
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:

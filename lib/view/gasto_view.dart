@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class GastoView extends StatefulWidget {
+  final Map<String, dynamic>? dadosIniciais;
+
+  const GastoView({super.key, this.dadosIniciais});
+
   @override
   _GastoViewState createState() => _GastoViewState();
 }
@@ -8,12 +13,49 @@ class GastoView extends StatefulWidget {
 class _GastoViewState extends State<GastoView> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
-  TextEditingController _estabelecimentoController = TextEditingController();
-  TextEditingController _localidadeController = TextEditingController();
+  final TextEditingController _estabelecimentoController = TextEditingController();
+  final TextEditingController _localidadeController = TextEditingController();
   List<Map<String, dynamic>> _produtos = [
     {'descricao': '', 'quantidade': '', 'preco': '', 'categoria': ''}
   ];
-  TextEditingController _totalController = TextEditingController();
+  final TextEditingController _totalController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.dadosIniciais != null) {
+      _preencherDadosIniciais(widget.dadosIniciais!);
+    }
+  }
+
+  void _preencherDadosIniciais(Map<String, dynamic> dados) {
+      _estabelecimentoController.text = dados['estabelecimento']?['nome'] ?? '';
+      _localidadeController.text = dados['estabelecimento']?['endereco_completo'] ?? '';
+
+      final dataString = dados['informacao_geral']?['data_hora_emissao'];
+      if(dataString != null) {
+          try {
+              final format = DateFormat("dd/MM/yyyy HH:mm:ss");
+              _selectedDate = format.parse(dataString.split('-')[0].trim());
+          } catch(e) {
+              _selectedDate = DateTime.now();
+          }
+      }
+
+      final List<dynamic> itens = dados['itens'] ?? [];
+      if (itens.isNotEmpty) {
+          _produtos = itens.map((item) {
+              return {
+                  'descricao': item['nome'] ?? '',
+                  'quantidade': item['qtd']?.toString() ?? '1',
+                  'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
+                  'categoria': 'Outros'
+              };
+          }).toList();
+      }
+
+      _totalController.text = dados['compra']?['valor_a_pagar']?.toStringAsFixed(2) ?? '0.00';
+  }
 
   @override
   void dispose() {
@@ -25,19 +67,17 @@ class _GastoViewState extends State<GastoView> {
 
   void _addItem() {
     setState(() {
-      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': ''});
+      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': 'Outros'});
     });
   }
 
   void _saveExpense() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Aqui você faria a lógica para salvar a despesa
-      // Por exemplo, enviar para um banco de dados ou lista
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Despesa cadastrada com sucesso!')),
       );
-      Navigator.pop(context); // Volta para a tela anterior
+      Navigator.pop(context);
     }
   }
 
@@ -64,25 +104,12 @@ class _GastoViewState extends State<GastoView> {
                 onPressed: _addItem,
                 icon: Icon(Icons.add),
                 label: Text('Adicionar item'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue,
-                  side: BorderSide(color: Colors.blue, style: BorderStyle.solid),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                ),
               ),
               SizedBox(height: 12),
               _buildTextField(_totalController, 'Total (R\$)', '0,00', keyboardType: TextInputType.number, isTotal: true),
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saveExpense,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                ),
                 child: Text('Salvar Despesa', style: TextStyle(fontSize: 18)),
               ),
             ],
@@ -92,6 +119,10 @@ class _GastoViewState extends State<GastoView> {
     );
   }
 
+  // Seus métodos de build (_buildDatePicker, _buildTextField, _buildProductItems)
+  // podem ser mantidos como estão no seu arquivo original `gasto_view.dart`.
+  // Apenas certifique-se de que eles usem os controllers e a lista `_produtos`
+  // que agora são preenchidos dinamicamente.
   Widget _buildDatePicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +154,7 @@ class _GastoViewState extends State<GastoView> {
                 Text(
                   _selectedDate == null
                       ? 'Selecione a data'
-                      : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                      : DateFormat('dd/MM/yyyy').format(_selectedDate!),
                 ),
                 Icon(Icons.calendar_today),
               ],
@@ -155,9 +186,6 @@ class _GastoViewState extends State<GastoView> {
             }
             return null;
           },
-          onSaved: (value) {
-            // Salvar o valor aqui
-          },
         ),
         SizedBox(height: 12),
       ],
@@ -178,24 +206,20 @@ class _GastoViewState extends State<GastoView> {
           Text('Itens da Nota', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           SizedBox(height: 8),
           ..._produtos.asMap().entries.map((entry) {
-            int index = entry.key;
             Map<String, dynamic> produto = entry.value;
+            // Cria controllers para cada campo de produto para poder preenchê-los
+            final descController = TextEditingController(text: produto['descricao']);
+            final qtdController = TextEditingController(text: produto['quantidade']);
+            final precoController = TextEditingController(text: produto['preco']);
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Column(
                 children: [
                   TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Descrição do produto',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-                      contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Campo obrigatório';
-                      }
-                      return null;
-                    },
+                    controller: descController,
+                    decoration: InputDecoration(hintText: 'Descrição do produto'),
+                    validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
                     onChanged: (value) => produto['descricao'] = value,
                   ),
                   SizedBox(height: 8),
@@ -203,42 +227,20 @@ class _GastoViewState extends State<GastoView> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          controller: qtdController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Qtd',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-                            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Obrigatório';
-                            }
-                            if (double.tryParse(value) == null) {
-                              return 'Número inválido';
-                            }
-                            return null;
-                          },
+                          decoration: InputDecoration(hintText: 'Qtd'),
+                          validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
                           onChanged: (value) => produto['quantidade'] = value,
                         ),
                       ),
                       SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
+                          controller: precoController,
                           keyboardType: TextInputType.numberWithOptions(decimal: true),
-                          decoration: InputDecoration(
-                            hintText: 'Preço R\$',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-                            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Obrigatório';
-                            }
-                            if (double.tryParse(value) == null) {
-                              return 'Número inválido';
-                            }
-                            return null;
-                          },
+                          decoration: InputDecoration(hintText: 'Preço R\$'),
+                          validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
                           onChanged: (value) => produto['preco'] = value,
                         ),
                       ),
@@ -246,26 +248,14 @@ class _GastoViewState extends State<GastoView> {
                   ),
                   SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-                      contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    ),
+                    decoration: InputDecoration(border: OutlineInputBorder()),
                     hint: Text('Categoria'),
                     value: produto['categoria'].isEmpty ? null : produto['categoria'],
                     items: ['Alimentação', 'Transporte', 'Lazer', 'Outros']
-                        .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                         .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        produto['categoria'] = value!;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Selecione uma categoria';
-                      }
-                      return null;
-                    },
+                    onChanged: (value) => setState(() => produto['categoria'] = value!),
+                    validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
                   ),
                 ],
               ),
