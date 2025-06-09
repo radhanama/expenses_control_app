@@ -36,6 +36,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   provider: ^6.1.2
   sqflite_common_ffi: ^2.3.3
+  sqlite3_flutter_libs: ^0.5.34
   expenses_control:
     path: ./framework
   html: ^0.15.0

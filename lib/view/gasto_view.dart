@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../view_model/gasto_view_model.dart';
+import '../view_model/categoria_view_model.dart';
+import '../models/categoria.dart';
+import 'package:expenses_control/models/gasto.dart';
 
 class GastoView extends StatefulWidget {
   final Map<String, dynamic>? dadosIniciais;
@@ -44,12 +49,14 @@ class _GastoViewState extends State<GastoView> {
 
       final List<dynamic> itens = dados['itens'] ?? [];
       if (itens.isNotEmpty) {
+          final categorias = context.read<CategoriaViewModel>().categorias;
+          final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
           _produtos = itens.map((item) {
               return {
                   'descricao': item['nome'] ?? '',
                   'quantidade': item['qtd']?.toString() ?? '1',
                   'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-                  'categoria': 'Outros'
+                  'categoria': cat
               };
           }).toList();
       }
@@ -66,18 +73,30 @@ class _GastoViewState extends State<GastoView> {
   }
 
   void _addItem() {
+    final categorias = context.read<CategoriaViewModel>().categorias;
+    final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
     setState(() {
-      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': 'Outros'});
+      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': cat});
     });
   }
 
-  void _saveExpense() {
+  void _saveExpense() async {
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Despesa cadastrada com sucesso!')),
+      final vm = context.read<GastoViewModel>();
+      final gasto = Gasto(
+        total: double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0,
+        data: _selectedDate ?? DateTime.now(),
+        categoria:
+            _produtos.isNotEmpty ? _produtos.first['categoria'] ?? 'Outros' : 'Outros',
+        local: _localidadeController.text,
       );
-      Navigator.pop(context);
+      await vm.salvarGasto(gasto);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Despesa cadastrada com sucesso!')),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -247,15 +266,17 @@ class _GastoViewState extends State<GastoView> {
                     ],
                   ),
                   SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(border: OutlineInputBorder()),
-                    hint: Text('Categoria'),
-                    value: produto['categoria'].isEmpty ? null : produto['categoria'],
-                    items: ['Alimentação', 'Transporte', 'Lazer', 'Outros']
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (value) => setState(() => produto['categoria'] = value!),
-                    validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                  Consumer<CategoriaViewModel>(
+                    builder: (context, vm, _) => DropdownButtonFormField<String>(
+                      decoration: InputDecoration(border: OutlineInputBorder()),
+                      hint: Text('Categoria'),
+                      value: produto['categoria'].isEmpty ? null : produto['categoria'],
+                      items: vm.categorias
+                          .map((c) => DropdownMenuItem(value: c.titulo, child: Text(c.titulo)))
+                          .toList(),
+                      onChanged: (value) => setState(() => produto['categoria'] = value!),
+                      validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                    ),
                   ),
                 ],
               ),

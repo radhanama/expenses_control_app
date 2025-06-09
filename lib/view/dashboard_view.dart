@@ -1,51 +1,12 @@
 // lib/view/dashboard_view.dart
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Importe fl_chart
-// REMOVA: import 'package:charts_flutter/flutter.dart' as charts;
-// REMOVA: import 'package:intl/intl.dart'; // intl é para formatação, não é mais usado diretamente nos dados do gráfico aqui
+import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import '../view_model/dashboard_view_model.dart';
 
 class DashboardView extends StatelessWidget {
-  // Dados fictícios (substitua com sua lógica de dados real)
-  final totalNoMes = 1250.00;
-  final transacoes = 15;
-  final alimentacao = 450.00;
-  final transporte = 300.00;
 
-  // Dados para o Gráfico de Pizza (FL_CHART)
-  final List<PieChartSectionData> _pieChartSections = [
-    PieChartSectionData(
-      color: Colors.blue,
-      value: 450, // Valor para Alimentação
-      title: 'Alimentação\nR\$450',
-      radius: 60, // Tamanho do raio da seção
-      titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-      titlePositionPercentageOffset: 0.55, // Posição do texto no gráfico de pizza
-    ),
-    PieChartSectionData(
-      color: Colors.green,
-      value: 300, // Valor para Transporte
-      title: 'Transporte\nR\$300',
-      radius: 60,
-      titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-      titlePositionPercentageOffset: 0.55,
-    ),
-    PieChartSectionData(
-      color: Colors.orange,
-      value: 200, // Valor para Lazer
-      title: 'Lazer\nR\$200',
-      radius: 60,
-      titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-      titlePositionPercentageOffset: 0.55,
-    ),
-    PieChartSectionData(
-      color: Colors.red,
-      value: 300, // Valor para Outros
-      title: 'Outros\nR\$300',
-      radius: 60,
-      titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-      titlePositionPercentageOffset: 0.55,
-    ),
-  ];
+  // Dados para o Gráfico de Pizza serão construídos dinamicamente
 
   // Dados para o Gráfico de Linha (FL_CHART)
   final List<FlSpot> _lineSpots = [
@@ -86,10 +47,10 @@ class DashboardView extends StatelessWidget {
         spacing: 8.0,
         runSpacing: 8.0,
         children: [
-          _buildStatCard(context, 'Total no Mês', 'R\$ ${totalNoMes.toStringAsFixed(2)}'),
-          _buildStatCard(context, 'Transações', transacoes.toString()),
-          _buildStatCard(context, 'Alimentação', 'R\$ ${alimentacao.toStringAsFixed(2)}'),
-          _buildStatCard(context, 'Transporte', 'R\$ ${transporte.toStringAsFixed(2)}'), // Corrigido erro de digitação aqui
+          _buildStatCard(context, 'Total no Mês', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalGastos.toStringAsFixed(2)}'),
+          _buildStatCard(context, 'Transações', context.watch<DashboardViewModel>().transacoes.toString()),
+          _buildStatCard(context, 'Alimentação', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalPorCategoria['Alimentação']?.toStringAsFixed(2) ?? '0.00'}'),
+          _buildStatCard(context, 'Transporte', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalPorCategoria['Transporte']?.toStringAsFixed(2) ?? '0.00'}'),
         ],
       ),
     );
@@ -196,15 +157,32 @@ class DashboardView extends StatelessWidget {
         children: [
           Text('Distribuição por Categoria', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Expanded(
-            child: PieChart(
-              PieChartData(
-                sections: _pieChartSections, // Suas seções de dados
-                sectionsSpace: 2, // Espaçamento entre as seções
-                centerSpaceRadius: 40, // Raio do círculo central (buraco)
-                borderData: FlBorderData(show: false), // Sem borda para o gráfico de pizza
-                // Opcional: Para mostrar legendas, você precisaria de um widget separado
-                // ou incluir mais informação no 'title' de cada PieChartSectionData
-              ),
+            child: Consumer<DashboardViewModel>(
+              builder: (context, vm, _) {
+                final sections = vm.resumo.totalPorCategoria.entries
+                    .map(
+                      (e) => PieChartSectionData(
+                        color: Colors.blue,
+                        value: e.value,
+                        title: '${e.key}\nR\$${e.value.toStringAsFixed(0)}',
+                        radius: 60,
+                        titleStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                        titlePositionPercentageOffset: 0.55,
+                      ),
+                    )
+                    .toList();
+                return PieChart(
+                  PieChartData(
+                    sections: sections,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 40,
+                    borderData: FlBorderData(show: false),
+                  ),
+                );
+              },
             ),
           ),
         ],
