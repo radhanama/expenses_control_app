@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart';
 import '../view_model/extrato_view_model.dart';
+import '../view_model/categoria_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
 
 class ExtratoView extends StatefulWidget {
@@ -102,15 +103,20 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildCategoryDropdown() {
-    return DropdownButton<String>(
-      value: _selectedCategory,
-      items: ['Todas', 'Alimentação', 'Transporte', 'Lazer', 'Outros']
-          .map((category) => DropdownMenuItem(value: category, child: Text(category)))
-          .toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedCategory = value!;
-        });
+    return Consumer<CategoriaViewModel>(
+      builder: (context, vm, _) {
+        final items = ['Todas', ...vm.categorias.map((c) => c.titulo)];
+        return DropdownButton<String>(
+          value: _selectedCategory,
+          items: items
+              .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedCategory = value!;
+            });
+          },
+        );
       },
     );
   }

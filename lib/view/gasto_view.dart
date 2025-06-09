@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/gasto_view_model.dart';
+import '../view_model/categoria_view_model.dart';
+import '../models/categoria.dart';
 import 'package:expenses_control/models/gasto.dart';
 
 class GastoView extends StatefulWidget {
@@ -47,12 +49,14 @@ class _GastoViewState extends State<GastoView> {
 
       final List<dynamic> itens = dados['itens'] ?? [];
       if (itens.isNotEmpty) {
+          final categorias = context.read<CategoriaViewModel>().categorias;
+          final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
           _produtos = itens.map((item) {
               return {
                   'descricao': item['nome'] ?? '',
                   'quantidade': item['qtd']?.toString() ?? '1',
                   'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-                  'categoria': 'Outros'
+                  'categoria': cat
               };
           }).toList();
       }
@@ -69,8 +73,10 @@ class _GastoViewState extends State<GastoView> {
   }
 
   void _addItem() {
+    final categorias = context.read<CategoriaViewModel>().categorias;
+    final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
     setState(() {
-      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': 'Outros'});
+      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': cat});
     });
   }
 
@@ -260,15 +266,17 @@ class _GastoViewState extends State<GastoView> {
                     ],
                   ),
                   SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(border: OutlineInputBorder()),
-                    hint: Text('Categoria'),
-                    value: produto['categoria'].isEmpty ? null : produto['categoria'],
-                    items: ['Alimentação', 'Transporte', 'Lazer', 'Outros']
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (value) => setState(() => produto['categoria'] = value!),
-                    validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                  Consumer<CategoriaViewModel>(
+                    builder: (context, vm, _) => DropdownButtonFormField<String>(
+                      decoration: InputDecoration(border: OutlineInputBorder()),
+                      hint: Text('Categoria'),
+                      value: produto['categoria'].isEmpty ? null : produto['categoria'],
+                      items: vm.categorias
+                          .map((c) => DropdownMenuItem(value: c.titulo, child: Text(c.titulo)))
+                          .toList(),
+                      onChanged: (value) => setState(() => produto['categoria'] = value!),
+                      validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                    ),
                   ),
                 ],
               ),

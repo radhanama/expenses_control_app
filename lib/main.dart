@@ -15,8 +15,10 @@ import 'package:expenses_control_app/services/statistica_service.dart';
 import 'databases/database.dart';
 import 'package:expenses_control/data/usuario_repository.dart';
 import 'package:expenses_control/data/gasto_repository.dart';
+import 'data/categoria_repository.dart';
 import 'services/authentication_service.dart';
 import 'view_model/usuario_view_model.dart';
+import 'view_model/categoria_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 // Imports relacionados ao banco de dados (comentados temporariamente)
@@ -39,6 +41,11 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider(create: (_) => CategoriaRepository(db)),
+        ChangeNotifierProvider(
+          create: (ctx) => CategoriaViewModel(ctx.read<CategoriaRepository>())
+            ..carregarCategorias(),
+        ),
         Provider(create: (_) => UsuarioRepository(db)),
         Provider(
           create: (ctx) => AuthenticationService(

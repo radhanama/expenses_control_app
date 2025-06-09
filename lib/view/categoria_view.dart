@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../view_model/categoria_view_model.dart';
 
 class CategoriaView extends StatefulWidget {
   @override
@@ -6,21 +8,7 @@ class CategoriaView extends StatefulWidget {
 }
 
 class _CategoriaViewState extends State<CategoriaView> {
-  List<String> _categories = ['Alimentação', 'Transporte', 'Lazer', 'Outros'];
-
-  void _addCategory(String newCategory) {
-    setState(() {
-      _categories.add(newCategory);
-    });
-  }
-
-  void _editCategory(int index, String newName) {
-    setState(() {
-      _categories[index] = newName;
-    });
-  }
-
-  void _deleteCategory(int index) {
+  void _deleteCategory(BuildContext context, int id) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -37,9 +25,7 @@ class _CategoriaViewState extends State<CategoriaView> {
             TextButton(
               child: Text('Excluir'),
               onPressed: () {
-                setState(() {
-                  _categories.removeAt(index);
-                });
+                // Não implementado: lógica de exclusão
                 Navigator.of(context).pop();
               },
             ),
@@ -70,11 +56,12 @@ class _CategoriaViewState extends State<CategoriaView> {
         //   ),
         // ],
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.all(16.0),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final category = _categories[index];
+      body: Consumer<CategoriaViewModel>(
+        builder: (context, vm, _) => ListView.builder(
+          padding: EdgeInsets.all(16.0),
+          itemCount: vm.categorias.length,
+          itemBuilder: (context, index) {
+            final category = vm.categorias[index];
           return Card(
             margin: EdgeInsets.only(bottom: 8.0),
             elevation: 1,
@@ -84,7 +71,7 @@ class _CategoriaViewState extends State<CategoriaView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(category, style: TextStyle(fontSize: 16)),
+                  Text(category.titulo, style: TextStyle(fontSize: 16)),
                   Row(
                     children: [
                       ElevatedButton(
@@ -92,7 +79,7 @@ class _CategoriaViewState extends State<CategoriaView> {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              TextEditingController _editController = TextEditingController(text: category);
+                              TextEditingController _editController = TextEditingController(text: category.titulo);
                               return AlertDialog(
                                 title: Text('Renomear Categoria'),
                                 content: TextField(
@@ -109,9 +96,7 @@ class _CategoriaViewState extends State<CategoriaView> {
                                   TextButton(
                                     child: Text('Salvar'),
                                     onPressed: () {
-                                      if (_editController.text.isNotEmpty) {
-                                        _editCategory(index, _editController.text);
-                                      }
+                                      // Não implementado: edição de categoria
                                       Navigator.of(context).pop();
                                     },
                                   ),
@@ -130,7 +115,7 @@ class _CategoriaViewState extends State<CategoriaView> {
                       ),
                       SizedBox(width: 4),
                       ElevatedButton(
-                        onPressed: () => _deleteCategory(index),
+                        onPressed: () => _deleteCategory(context, category.id ?? 0),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,

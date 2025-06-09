@@ -1,4 +1,3 @@
-import 'package:expenses_control/models/categoria.dart';
 import 'package:expenses_control_app/view/adicionar_gasto_view.dart';
 import 'package:expenses_control_app/view/categoria_view.dart';
 import 'package:expenses_control_app/view/dashboard_view.dart';
