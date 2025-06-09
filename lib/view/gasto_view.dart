@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../view_model/gasto_view_model.dart';
+import 'package:expenses_control/models/gasto.dart';
 
 class GastoView extends StatefulWidget {
   final Map<String, dynamic>? dadosIniciais;
@@ -71,13 +74,23 @@ class _GastoViewState extends State<GastoView> {
     });
   }
 
-  void _saveExpense() {
+  void _saveExpense() async {
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Despesa cadastrada com sucesso!')),
+      final vm = context.read<GastoViewModel>();
+      final gasto = Gasto(
+        total: double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0,
+        data: _selectedDate ?? DateTime.now(),
+        categoria:
+            _produtos.isNotEmpty ? _produtos.first['categoria'] ?? 'Outros' : 'Outros',
+        local: _localidadeController.text,
       );
-      Navigator.pop(context);
+      await vm.salvarGasto(gasto);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Despesa cadastrada com sucesso!')),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 

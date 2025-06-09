@@ -9,6 +9,15 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:expenses_control_app/view/main_view.dart';
 import 'package:expenses_control_app/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
+import 'package:expenses_control_app/view_model/extrato_view_model.dart';
+import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
+import 'package:expenses_control_app/services/statistica_service.dart';
+import 'databases/database.dart';
+import 'package:expenses_control/data/usuario_repository.dart';
+import 'package:expenses_control/data/gasto_repository.dart';
+import 'services/authentication_service.dart';
+import 'view_model/usuario_view_model.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 // Imports relacionados ao banco de dados (comentados temporariamente)
 // import 'package:expenses_control_framework/expenses_control_framework.dart';
@@ -21,42 +30,44 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
 
-  // A inicialização do FFI para desktop e do banco de dados foi desativada temporariamente.
-  // if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-  //   sqfliteFfiInit();
-  //   databaseFactory = databaseFactoryFfi;
-  // }
-  // final db = await openAppDatabase();
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  final db = await openAppDatabase();
 
   runApp(
     MultiProvider(
       providers: [
-        // =====================================================================
-        // Providers que dependem do banco de dados (desativados temporariamente)
-        // Para reativar, descomente estas linhas, os imports acima e a
-        // inicialização do 'db'.
-        // =====================================================================
-        // Provider(create: (_) => UsuarioRepository(db)),
-        // Provider(
-        //   create: (ctx) => AuthenticationService(
-        //     ctx.read<UsuarioRepository>(),
-        //     secureStorage: const FlutterSecureStorage(),
-        //   ),
-        // ),
-        // ChangeNotifierProvider(
-        //   create: (ctx) => UsuarioViewModel(
-        //     repo: ctx.read<UsuarioRepository>(),
-        //     auth: ctx.read<AuthenticationService>(),
-        //   ),
-        // ),
-
-        // =====================================================================
-        // Providers independentes que podem ser testados sem o banco de dados
-        // =====================================================================
+        Provider(create: (_) => UsuarioRepository(db)),
+        Provider(
+          create: (ctx) => AuthenticationService(
+            ctx.read<UsuarioRepository>(),
+            secureStorage: const FlutterSecureStorage(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => UsuarioViewModel(
+            repo: ctx.read<UsuarioRepository>(),
+            auth: ctx.read<AuthenticationService>(),
+          ),
+        ),
+        Provider(create: (_) => GastoRepository(db)),
+        Provider(create: (_) => EstatisticaService()),
         Provider(create: (_) => WebScrapingService()),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
+            repo: ctx.read<GastoRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => ExtratoViewModel(ctx.read<GastoRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => DashboardViewModel(
+            ctx.read<GastoRepository>(),
+            ctx.read<EstatisticaService>(),
           ),
         ),
       ],
@@ -77,8 +88,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // A tela inicial continua a mesma, mas funcionalidades que dependem
-      // dos providers de usuário/autenticação (como login) não irão funcionar.
       home: MainView(),
     );
   }

@@ -1,8 +1,10 @@
 // lib/view/extrato_view.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatar datas
-// Importe diretamente a função showMonthPicker do pacote
+import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
+import 'package:provider/provider.dart';
+import '../view_model/extrato_view_model.dart';
+import 'package:expenses_control/models/gasto.dart';
 
 class ExtratoView extends StatefulWidget {
   @override
@@ -13,24 +15,21 @@ class _ExtratoViewState extends State<ExtratoView> {
   DateTime _selectedMonth = DateTime.now();
   String _selectedCategory = 'Todas';
 
-  // Dados fictícios (substitua com sua lógica de dados)
-  final List<Map<String, dynamic>> _gastos = [
-    {'data': DateTime(2025, 5, 2), 'desc': 'Almoço Restaurante', 'cat': 'Alimentação', 'qtd': 1, 'preco': 45.50, 'local': 'Rio de Janeiro'},
-    {'data': DateTime(2025, 5, 5), 'desc': 'Uber', 'cat': 'Transporte', 'qtd': 1, 'preco': 32.80, 'local': 'Rio de Janeiro'},
-    {'data': DateTime(2025, 5, 10), 'desc': 'Cinema', 'cat': 'Lazer', 'qtd': 2, 'preco': 25.00, 'local': 'Niterói'},
-    {'data': DateTime(2025, 4, 28), 'desc': 'Supermercado', 'cat': 'Alimentação', 'qtd': 5, 'preco': 12.00, 'local': 'São Paulo'},
-    {'data': DateTime(2025, 5, 15), 'desc': 'Café', 'cat': 'Outros', 'qtd': 1, 'preco': 8.00, 'local': 'Rio de Janeiro'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => context.read<ExtratoViewModel>().carregarGastos());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredGastos = _gastos.where((gasto) =>
-        gasto['data'].year == _selectedMonth.year &&
-        gasto['data'].month == _selectedMonth.month &&
-        (_selectedCategory == 'Todas' || gasto['cat'] == _selectedCategory))
-        .toList();
+    final vm = context.watch<ExtratoViewModel>();
+    final filtered = vm.gastos.where((Gasto g) =>
+        g.data.year == _selectedMonth.year &&
+        g.data.month == _selectedMonth.month &&
+        (_selectedCategory == 'Todas' || g.categoria == _selectedCategory));
 
-    final totalGasto = filteredGastos.fold<double>(0, (sum, gasto) => sum + (gasto['qtd'] * gasto['preco']));
+    final totalGasto = filtered.fold<double>(0, (sum, g) => sum + g.total);
 
     return Scaffold(
       appBar: AppBar(
@@ -65,7 +64,7 @@ class _ExtratoViewState extends State<ExtratoView> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              child: _buildGastosTable(filteredGastos),
+              child: _buildGastosTable(filtered.toList()),
             ),
           ),
         ],
@@ -116,7 +115,7 @@ class _ExtratoViewState extends State<ExtratoView> {
     );
   }
 
-  Widget _buildGastosTable(List<Map<String, dynamic>> gastos) {
+  Widget _buildGastosTable(List<Gasto> gastos) {
     return Container(
       margin: EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -148,14 +147,14 @@ class _ExtratoViewState extends State<ExtratoView> {
               _buildTableCell('Local', isHeader: true),
             ],
           ),
-          ...gastos.map((gasto) => TableRow(children: [
-            _buildTableCell(DateFormat('yyyy-MM-dd').format(gasto['data'])),
-            _buildTableCell(gasto['desc']),
-            _buildTableCell(gasto['cat']),
-            _buildTableCell(gasto['qtd'].toString()),
-            _buildTableCell('R\$ ${gasto['preco'].toStringAsFixed(2)}'),
-            _buildTableCell('R\$ ${(gasto['qtd'] * gasto['preco']).toStringAsFixed(2)}'),
-            _buildTableCell(gasto['local']),
+          ...gastos.map((g) => TableRow(children: [
+            _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
+            _buildTableCell('-'),
+            _buildTableCell(g.categoria),
+            _buildTableCell('-'),
+            _buildTableCell('-'),
+            _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),
+            _buildTableCell(g.local),
           ])).toList(),
         ],
       ),
