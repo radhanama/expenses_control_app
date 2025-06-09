@@ -1,11 +1,11 @@
-// lib/core/services/authentication_service.dart
+// libmodels/ervices/authentication_service.dart
 //
 // “Hot-spot” service responsible for registration, login and logout.
 // Business rules live here; storage lives in UsuarioRepository.
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:expenses_control/data/usuario_repository.dart';
+import 'package:expenses_control/models/data/usuario_repository.dart';
 import 'package:expenses_control/models/usuario.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

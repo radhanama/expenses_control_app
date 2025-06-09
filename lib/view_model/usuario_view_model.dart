@@ -1,6 +1,6 @@
-import 'package:expenses_control/data/usuario_repository.dart';
+import 'package:expenses_control/models/data/usuario_repository.dart';
 import 'package:expenses_control/models/usuario.dart';
-import 'package:expenses_control_app/services/authentication_service.dart';
+import 'package:expenses_control_app/models/services/authentication_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// View‑Model para a tela de autenticação.

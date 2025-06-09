@@ -1,7 +1,7 @@
+import 'package:expenses_control/models/data/gasto_repository.dart';
+import 'package:expenses_control/models/statistics/estatistica_dto.dart';
 import 'package:flutter/material.dart';
-import 'package:expenses_control/data/gasto_repository.dart';
-import 'package:expenses_control/core/statistics/estatistica_dto.dart';
-import 'package:expenses_control_app/services/statistica_service.dart';
+import 'package:expenses_control_app/models/services/statistica_service.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final GastoRepository _repo;

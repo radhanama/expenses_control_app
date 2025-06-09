@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/categoria_repository.dart';
+import '../models/data/categoria_repository.dart';
 import '../models/categoria.dart';
 
 class CategoriaViewModel extends ChangeNotifier {
@@ -24,4 +24,3 @@ class CategoriaViewModel extends ChangeNotifier {
     await carregarCategorias();
   }
 }
-

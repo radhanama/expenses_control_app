@@ -1,5 +1,5 @@
-import 'package:expenses_control_app/services/web_scrapping_service.dart';
-import 'package:expenses_control/data/gasto_repository.dart';
+import 'package:expenses_control/models/data/gasto_repository.dart';
+import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +29,8 @@ class GastoViewModel extends ChangeNotifier {
 
   Future<bool> processarQRCode(String url) async {
     // Validação básica da URL
-    if (!url.startsWith('https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode')) {
+    if (!url.startsWith(
+        'https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode')) {
       _errorMessage = "QR Code inválido. A URL não é de uma nota fiscal do RJ.";
       notifyListeners();
       return false;
