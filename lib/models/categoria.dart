@@ -1,4 +1,4 @@
-import 'package:expenses_control/core/base/entity_mapper.dart';
+import 'package:expenses_control/models/base/entity_mapper.dart';
 
 class Categoria with EntityMapper {
   @override
@@ -7,7 +7,8 @@ class Categoria with EntityMapper {
   final String descricao;
   final String? parentId;
 
-  Categoria({this.id, required this.titulo, required this.descricao, this.parentId});
+  Categoria(
+      {this.id, required this.titulo, required this.descricao, this.parentId});
 
   @override
   String get tableName => 'categorias';
@@ -40,4 +41,3 @@ class Categoria with EntityMapper {
         parentId: parentId ?? this.parentId,
       );
 }
-

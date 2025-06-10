@@ -1,4 +1,4 @@
-import 'package:expenses_control/core/base/entity_mapper.dart';
+import 'package:expenses_control/models/base/entity_mapper.dart';
 
 enum NotificationTipo { LEMBRETE, ALERTA_GASTO }
 

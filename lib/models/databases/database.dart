@@ -113,7 +113,6 @@ Future<void> _seedData(Database db) async {
       {'titulo': 'Alimentação', 'descricao': 'Gastos com comida'},
       {'titulo': 'Transporte', 'descricao': 'Deslocamentos'},
       {'titulo': 'Lazer', 'descricao': 'Atividades de lazer'},
-      {'titulo': 'Outros', 'descricao': 'Outras despesas'},
     ];
     for (final c in categorias) {
       batch.insert('categorias', c);
