@@ -46,7 +46,9 @@ Future<void> _onCreate(Database db, int version) async {
       titulo     TEXT NOT NULL,
       descricao  TEXT NOT NULL,
       parent_id  INTEGER,
-      FOREIGN KEY (parent_id) REFERENCES categorias(id)
+      usuario_id INTEGER NOT NULL,
+      FOREIGN KEY (parent_id) REFERENCES categorias(id),
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
   ''');
 
@@ -55,7 +57,9 @@ Future<void> _onCreate(Database db, int version) async {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       nome        TEXT NOT NULL,
       preco       REAL NOT NULL,
-      quantidade  INTEGER NOT NULL
+      quantidade  INTEGER NOT NULL,
+      usuario_id  INTEGER NOT NULL,
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
   ''');
 
@@ -64,10 +68,11 @@ Future<void> _onCreate(Database db, int version) async {
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       total      REAL NOT NULL,
       data       TEXT NOT NULL,
-      categoria  TEXT NOT NULL,
+      categoria_id INTEGER NOT NULL,
       local      TEXT,
       usuario_id INTEGER NOT NULL,
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+      FOREIGN KEY (categoria_id) REFERENCES categorias(id)
     );
   ''');
 
@@ -77,7 +82,9 @@ Future<void> _onCreate(Database db, int version) async {
       imagem_path    TEXT,
       texto_extraido TEXT NOT NULL,
       gasto_id       INTEGER,
-      FOREIGN KEY (gasto_id) REFERENCES gastos(id)
+      usuario_id     INTEGER NOT NULL,
+      FOREIGN KEY (gasto_id) REFERENCES gastos(id),
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
   ''');
 
@@ -110,10 +117,14 @@ Future<void> _seedData(Database db) async {
   if (count == 0) {
     final batch = db.batch();
     const categorias = [
-      {'titulo': 'Alimentação', 'descricao': 'Gastos com comida'},
-      {'titulo': 'Transporte', 'descricao': 'Deslocamentos'},
-      {'titulo': 'Lazer', 'descricao': 'Atividades de lazer'},
-      {'titulo': 'Outros', 'descricao': 'Outras despesas'},
+      {
+        'titulo': 'Alimentação',
+        'descricao': 'Gastos com comida',
+        'usuario_id': 1
+      },
+      {'titulo': 'Transporte', 'descricao': 'Deslocamentos', 'usuario_id': 1},
+      {'titulo': 'Lazer', 'descricao': 'Atividades de lazer', 'usuario_id': 1},
+      {'titulo': 'Outros', 'descricao': 'Outras despesas', 'usuario_id': 1},
     ];
     for (final c in categorias) {
       batch.insert('categorias', c);

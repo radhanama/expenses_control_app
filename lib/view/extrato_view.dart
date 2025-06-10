@@ -1,4 +1,3 @@
-// lib/view/extrato_view.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -24,10 +23,15 @@ class _ExtratoViewState extends State<ExtratoView> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ExtratoViewModel>();
-    final filtered = vm.gastos.where((Gasto g) =>
-        g.data.year == _selectedMonth.year &&
-        g.data.month == _selectedMonth.month &&
-        (_selectedCategory == 'Todas' || g.categoria == _selectedCategory));
+    final categorias = context.watch<CategoriaViewModel>().categorias;
+    final catMap = {for (final c in categorias) c.id: c.titulo};
+
+    final filtered = vm.gastos.where((Gasto g) {
+      final catTitulo = catMap[g.categoriaId] ?? '';
+      return g.data.year == _selectedMonth.year &&
+          g.data.month == _selectedMonth.month &&
+          (_selectedCategory == 'Todas' || catTitulo == _selectedCategory);
+    }).toList();
 
     final totalGasto = filtered.fold<double>(0, (sum, g) => sum + g.total);
 
@@ -70,7 +74,7 @@ class _ExtratoViewState extends State<ExtratoView> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              child: _buildGastosTable(filtered.toList()),
+              child: _buildGastosTable(filtered, catMap),
             ),
           ),
         ],
@@ -110,7 +114,7 @@ class _ExtratoViewState extends State<ExtratoView> {
     );
   }
 
-  Widget _buildGastosTable(List<Gasto> gastos) {
+  Widget _buildGastosTable(List<Gasto> gastos, Map<int?, String> catMap) {
     return Container(
       margin: EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -151,7 +155,7 @@ class _ExtratoViewState extends State<ExtratoView> {
               .map((g) => TableRow(children: [
                     _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
                     _buildTableCell('-'),
-                    _buildTableCell(g.categoria),
+                    _buildTableCell(catMap[g.categoriaId] ?? ''),
                     _buildTableCell('-'),
                     _buildTableCell('-'),
                     _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),

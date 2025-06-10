@@ -1,3 +1,4 @@
+import 'package:expenses_control_app/view_model/usuario_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -86,12 +87,21 @@ class _GastoViewState extends State<GastoView> {
   void _saveExpense() async {
     if (_formKey.currentState!.validate()) {
       final vm = context.read<GastoViewModel>();
+      final usuarioId = context.read<UsuarioViewModel>().usuarioLogado?.id ?? 0;
+      final categorias = context.read<CategoriaViewModel>().categorias;
+      final catTitulo = _produtos.isNotEmpty
+          ? _produtos.first['categoria'] ?? 'Outros'
+          : 'Outros';
+      final categoria = categorias.firstWhere(
+        (c) => c.titulo == catTitulo,
+        orElse: () => categorias.first,
+      );
+
       final gasto = Gasto(
+        usuarioId: usuarioId,
+        categoriaId: categoria.id ?? 0,
         total: double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0,
         data: _selectedDate ?? DateTime.now(),
-        categoria: _produtos.isNotEmpty
-            ? _produtos.first['categoria'] ?? 'Outros'
-            : 'Outros',
         local: _localidadeController.text,
       );
       await vm.salvarGasto(gasto);
