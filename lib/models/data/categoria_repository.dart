@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import '../models/categoria.dart';
+import '../categoria.dart';
 
 class CategoriaRepository {
   final Database db;
@@ -20,4 +20,3 @@ class CategoriaRepository {
     return maps.map((m) => Categoria.fromMap(m)).toList();
   }
 }
-

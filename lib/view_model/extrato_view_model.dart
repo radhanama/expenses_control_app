@@ -1,5 +1,5 @@
+import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:expenses_control/data/gasto_repository.dart';
 import 'package:expenses_control/models/gasto.dart';
 
 class ExtratoViewModel extends ChangeNotifier {

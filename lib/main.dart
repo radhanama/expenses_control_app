@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:expenses_control/models/data/gasto_repository.dart';
+import 'package:expenses_control/models/data/usuario_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
@@ -7,16 +9,14 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Imports do projeto que não dependem do DB
 import 'package:expenses_control_app/view/main_view.dart';
-import 'package:expenses_control_app/services/web_scrapping_service.dart';
+import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
-import 'package:expenses_control_app/services/statistica_service.dart';
-import 'databases/database.dart';
-import 'package:expenses_control/data/usuario_repository.dart';
-import 'package:expenses_control/data/gasto_repository.dart';
-import 'data/categoria_repository.dart';
-import 'services/authentication_service.dart';
+import 'package:expenses_control_app/models/services/statistica_service.dart';
+import 'models/databases/database.dart';
+import 'models/data/categoria_repository.dart';
+import 'models/services/authentication_service.dart';
 import 'view_model/usuario_view_model.dart';
 import 'view_model/categoria_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -26,7 +26,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // import 'package:expenses_control_app/services/authentication_service.dart';
 // import 'package:expenses_control_app/view_model/usuario_view_model.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
