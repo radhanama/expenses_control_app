@@ -1,3 +1,3 @@
 [submodule "framework"]
 	path = framework
-	url = ../expenses_control_framework.git
+	url = https://github.com/radhanama/expenses_control_framework.git
