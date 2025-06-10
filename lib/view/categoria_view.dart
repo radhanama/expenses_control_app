@@ -8,7 +8,7 @@ class CategoriaView extends StatefulWidget {
 }
 
 class _CategoriaViewState extends State<CategoriaView> {
-  void _deleteCategory(BuildContext context, int id) {
+  void _deleteCategory(BuildContext context, String id) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -24,9 +24,9 @@ class _CategoriaViewState extends State<CategoriaView> {
             ),
             TextButton(
               child: Text('Excluir'),
-              onPressed: () {
-                // Não implementado: lógica de exclusão
-                Navigator.of(context).pop();
+              onPressed: () async {
+                await context.read<CategoriaViewModel>().deletarCategoria(id);
+                if (mounted) Navigator.of(context).pop();
               },
             ),
           ],
@@ -99,9 +99,14 @@ class _CategoriaViewState extends State<CategoriaView> {
                                     ),
                                     TextButton(
                                       child: Text('Salvar'),
-                                      onPressed: () {
-                                        // Não implementado: edição de categoria
-                                        Navigator.of(context).pop();
+                                      onPressed: () async {
+                                        await context
+                                            .read<CategoriaViewModel>()
+                                            .atualizarCategoria(
+                                              category.copyWith(
+                                                  titulo: _editController.text),
+                                            );
+                                        if (mounted) Navigator.of(context).pop();
                                       },
                                     ),
                                   ],
@@ -122,7 +127,7 @@ class _CategoriaViewState extends State<CategoriaView> {
                         SizedBox(width: 4),
                         ElevatedButton(
                           onPressed: () =>
-                              _deleteCategory(context, category.id ?? 0),
+                              _deleteCategory(context, category.id ?? ''),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,

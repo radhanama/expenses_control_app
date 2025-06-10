@@ -23,4 +23,14 @@ class CategoriaViewModel extends ChangeNotifier {
     await _repo.create(Categoria(titulo: titulo, descricao: descricao));
     await carregarCategorias();
   }
+
+  Future<void> atualizarCategoria(Categoria categoria) async {
+    await _repo.update(categoria);
+    await carregarCategorias();
+  }
+
+  Future<void> deletarCategoria(String id) async {
+    await _repo.delete(id);
+    await carregarCategorias();
+  }
 }
