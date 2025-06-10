@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/gasto_view_model.dart';
 import '../view_model/categoria_view_model.dart';
-import '../models/categoria.dart';
 import 'package:expenses_control/models/gasto.dart';
 
 class GastoView extends StatefulWidget {
@@ -18,7 +17,8 @@ class GastoView extends StatefulWidget {
 class _GastoViewState extends State<GastoView> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
-  final TextEditingController _estabelecimentoController = TextEditingController();
+  final TextEditingController _estabelecimentoController =
+      TextEditingController();
   final TextEditingController _localidadeController = TextEditingController();
   List<Map<String, dynamic>> _produtos = [
     {'descricao': '', 'quantidade': '', 'preco': '', 'categoria': ''}
@@ -34,34 +34,36 @@ class _GastoViewState extends State<GastoView> {
   }
 
   void _preencherDadosIniciais(Map<String, dynamic> dados) {
-      _estabelecimentoController.text = dados['estabelecimento']?['nome'] ?? '';
-      _localidadeController.text = dados['estabelecimento']?['endereco_completo'] ?? '';
+    _estabelecimentoController.text = dados['estabelecimento']?['nome'] ?? '';
+    _localidadeController.text =
+        dados['estabelecimento']?['endereco_completo'] ?? '';
 
-      final dataString = dados['informacao_geral']?['data_hora_emissao'];
-      if(dataString != null) {
-          try {
-              final format = DateFormat("dd/MM/yyyy HH:mm:ss");
-              _selectedDate = format.parse(dataString.split('-')[0].trim());
-          } catch(e) {
-              _selectedDate = DateTime.now();
-          }
+    final dataString = dados['informacao_geral']?['data_hora_emissao'];
+    if (dataString != null) {
+      try {
+        final format = DateFormat("dd/MM/yyyy HH:mm:ss");
+        _selectedDate = format.parse(dataString.split('-')[0].trim());
+      } catch (e) {
+        _selectedDate = DateTime.now();
       }
+    }
 
-      final List<dynamic> itens = dados['itens'] ?? [];
-      if (itens.isNotEmpty) {
-          final categorias = context.read<CategoriaViewModel>().categorias;
-          final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
-          _produtos = itens.map((item) {
-              return {
-                  'descricao': item['nome'] ?? '',
-                  'quantidade': item['qtd']?.toString() ?? '1',
-                  'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-                  'categoria': cat
-              };
-          }).toList();
-      }
+    final List<dynamic> itens = dados['itens'] ?? [];
+    if (itens.isNotEmpty) {
+      final categorias = context.read<CategoriaViewModel>().categorias;
+      final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
+      _produtos = itens.map((item) {
+        return {
+          'descricao': item['nome'] ?? '',
+          'quantidade': item['qtd']?.toString() ?? '1',
+          'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
+          'categoria': cat
+        };
+      }).toList();
+    }
 
-      _totalController.text = dados['compra']?['valor_a_pagar']?.toStringAsFixed(2) ?? '0.00';
+    _totalController.text =
+        dados['compra']?['valor_a_pagar']?.toStringAsFixed(2) ?? '0.00';
   }
 
   @override
@@ -76,7 +78,8 @@ class _GastoViewState extends State<GastoView> {
     final categorias = context.read<CategoriaViewModel>().categorias;
     final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
     setState(() {
-      _produtos.add({'descricao': '', 'quantidade': '', 'preco': '', 'categoria': cat});
+      _produtos.add(
+          {'descricao': '', 'quantidade': '', 'preco': '', 'categoria': cat});
     });
   }
 
@@ -86,8 +89,9 @@ class _GastoViewState extends State<GastoView> {
       final gasto = Gasto(
         total: double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0,
         data: _selectedDate ?? DateTime.now(),
-        categoria:
-            _produtos.isNotEmpty ? _produtos.first['categoria'] ?? 'Outros' : 'Outros',
+        categoria: _produtos.isNotEmpty
+            ? _produtos.first['categoria'] ?? 'Outros'
+            : 'Outros',
         local: _localidadeController.text,
       );
       await vm.salvarGasto(gasto);
@@ -114,8 +118,10 @@ class _GastoViewState extends State<GastoView> {
           child: ListView(
             children: [
               _buildDatePicker(),
-              _buildTextField(_estabelecimentoController, 'Estabelecimento', 'Nome do local'),
-              _buildTextField(_localidadeController, 'Localidade', 'Cidade, Estado'),
+              _buildTextField(_estabelecimentoController, 'Estabelecimento',
+                  'Nome do local'),
+              _buildTextField(
+                  _localidadeController, 'Localidade', 'Cidade, Estado'),
               SizedBox(height: 12),
               _buildProductItems(),
               SizedBox(height: 12),
@@ -125,7 +131,8 @@ class _GastoViewState extends State<GastoView> {
                 label: Text('Adicionar item'),
               ),
               SizedBox(height: 12),
-              _buildTextField(_totalController, 'Total (R\$)', '0,00', keyboardType: TextInputType.number, isTotal: true),
+              _buildTextField(_totalController, 'Total (R\$)', '0,00',
+                  keyboardType: TextInputType.number, isTotal: true),
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saveExpense,
@@ -146,7 +153,8 @@ class _GastoViewState extends State<GastoView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Data da Compra', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        Text('Data da Compra',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         SizedBox(height: 4),
         InkWell(
           onTap: () async {
@@ -164,7 +172,8 @@ class _GastoViewState extends State<GastoView> {
           },
           child: InputDecorator(
             decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
               contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             ),
             child: Row(
@@ -185,11 +194,14 @@ class _GastoViewState extends State<GastoView> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint, {TextInputType keyboardType = TextInputType.text, bool isTotal = false}) {
+  Widget _buildTextField(
+      TextEditingController controller, String label, String hint,
+      {TextInputType keyboardType = TextInputType.text, bool isTotal = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        Text(label,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -222,14 +234,18 @@ class _GastoViewState extends State<GastoView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Itens da Nota', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          Text('Itens da Nota',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           SizedBox(height: 8),
           ..._produtos.asMap().entries.map((entry) {
             Map<String, dynamic> produto = entry.value;
             // Cria controllers para cada campo de produto para poder preenchê-los
-            final descController = TextEditingController(text: produto['descricao']);
-            final qtdController = TextEditingController(text: produto['quantidade']);
-            final precoController = TextEditingController(text: produto['preco']);
+            final descController =
+                TextEditingController(text: produto['descricao']);
+            final qtdController =
+                TextEditingController(text: produto['quantidade']);
+            final precoController =
+                TextEditingController(text: produto['preco']);
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
@@ -237,8 +253,10 @@ class _GastoViewState extends State<GastoView> {
                 children: [
                   TextFormField(
                     controller: descController,
-                    decoration: InputDecoration(hintText: 'Descrição do produto'),
-                    validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                    decoration:
+                        InputDecoration(hintText: 'Descrição do produto'),
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Obrigatório' : null,
                     onChanged: (value) => produto['descricao'] = value,
                   ),
                   SizedBox(height: 8),
@@ -249,7 +267,8 @@ class _GastoViewState extends State<GastoView> {
                           controller: qtdController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(hintText: 'Qtd'),
-                          validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Obrigatório' : null,
                           onChanged: (value) => produto['quantidade'] = value,
                         ),
                       ),
@@ -257,9 +276,11 @@ class _GastoViewState extends State<GastoView> {
                       Expanded(
                         child: TextFormField(
                           controller: precoController,
-                          keyboardType: TextInputType.numberWithOptions(decimal: true),
+                          keyboardType:
+                              TextInputType.numberWithOptions(decimal: true),
                           decoration: InputDecoration(hintText: 'Preço R\$'),
-                          validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Obrigatório' : null,
                           onChanged: (value) => produto['preco'] = value,
                         ),
                       ),
@@ -267,15 +288,21 @@ class _GastoViewState extends State<GastoView> {
                   ),
                   SizedBox(height: 8),
                   Consumer<CategoriaViewModel>(
-                    builder: (context, vm, _) => DropdownButtonFormField<String>(
+                    builder: (context, vm, _) =>
+                        DropdownButtonFormField<String>(
                       decoration: InputDecoration(border: OutlineInputBorder()),
                       hint: Text('Categoria'),
-                      value: produto['categoria'].isEmpty ? null : produto['categoria'],
+                      value: produto['categoria'].isEmpty
+                          ? null
+                          : produto['categoria'],
                       items: vm.categorias
-                          .map((c) => DropdownMenuItem(value: c.titulo, child: Text(c.titulo)))
+                          .map((c) => DropdownMenuItem(
+                              value: c.titulo, child: Text(c.titulo)))
                           .toList(),
-                      onChanged: (value) => setState(() => produto['categoria'] = value!),
-                      validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null,
+                      onChanged: (value) =>
+                          setState(() => produto['categoria'] = value!),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Obrigatório' : null,
                     ),
                   ),
                 ],

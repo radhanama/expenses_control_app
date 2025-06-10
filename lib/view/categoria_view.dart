@@ -24,9 +24,9 @@ class _CategoriaViewState extends State<CategoriaView> {
             ),
             TextButton(
               child: Text('Excluir'),
-              onPressed: () {
-                // Não implementado: lógica de exclusão
-                Navigator.of(context).pop();
+              onPressed: () async {
+                await context.read<CategoriaViewModel>().deletarCategoria(id);
+                if (mounted) Navigator.of(context).pop();
               },
             ),
           ],
@@ -99,9 +99,15 @@ class _CategoriaViewState extends State<CategoriaView> {
                                     ),
                                     TextButton(
                                       child: Text('Salvar'),
-                                      onPressed: () {
-                                        // Não implementado: edição de categoria
-                                        Navigator.of(context).pop();
+                                      onPressed: () async {
+                                        await context
+                                            .read<CategoriaViewModel>()
+                                            .atualizarCategoria(
+                                              category.copyWith(
+                                                  titulo: _editController.text),
+                                            );
+                                        if (mounted)
+                                          Navigator.of(context).pop();
                                       },
                                     ),
                                   ],

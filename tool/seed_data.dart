@@ -1,7 +1,7 @@
+import 'package:expenses_control/models/categoria.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../lib/models/databases/database.dart';
 import '../lib/models/data/categoria_repository.dart';
-import '../lib/models/categoria.dart';
 
 Future<void> main() async {
   sqfliteFfiInit();

@@ -61,7 +61,8 @@ class AuthenticationService {
     }
 
     // Persist session if secure storage is available
-    await _secureStorage?.write(key: _kCurrentUserId, value: user.id);
+    await _secureStorage?.write(
+        key: _kCurrentUserId, value: user.id.toString());
 
     return user;
   }
@@ -80,7 +81,7 @@ class AuthenticationService {
   static const _kCurrentUserId = 'current_user_id';
 
   Future<Usuario?> currentUser() async {
-    final id = await _secureStorage?.read(key: _kCurrentUserId);
+    final id = await _secureStorage?.read(key: _kCurrentUserId) as int?;
     return id == null ? null : _usuarioRepo.findById(id);
   }
 
