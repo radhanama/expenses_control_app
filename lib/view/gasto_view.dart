@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/gasto_view_model.dart';
 import '../view_model/categoria_view_model.dart';
+import '../view_model/extrato_view_model.dart';
+import '../view_model/dashboard_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
 
 class GastoView extends StatefulWidget {
@@ -132,6 +134,9 @@ class _GastoViewState extends State<GastoView> {
         local: _localidadeController.text,
       );
       await vm.salvarGasto(gasto);
+      // Refresh related view models so other screens update immediately
+      await context.read<ExtratoViewModel>().carregarGastos();
+      await context.read<DashboardViewModel>().carregarResumo();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Despesa cadastrada com sucesso!')),
