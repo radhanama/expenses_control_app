@@ -24,6 +24,9 @@ class _GastoViewState extends State<GastoView> {
   List<Map<String, dynamic>> _produtos = [
     {'descricao': '', 'quantidade': '', 'preco': '', 'categoria': ''}
   ];
+  final List<TextEditingController> _descControllers = [];
+  final List<TextEditingController> _qtdControllers = [];
+  final List<TextEditingController> _precoControllers = [];
   final TextEditingController _totalController = TextEditingController();
 
   @override
@@ -31,6 +34,10 @@ class _GastoViewState extends State<GastoView> {
     super.initState();
     if (widget.dadosIniciais != null) {
       _preencherDadosIniciais(widget.dadosIniciais!);
+    } else {
+      _descControllers.add(TextEditingController());
+      _qtdControllers.add(TextEditingController());
+      _precoControllers.add(TextEditingController());
     }
   }
 
@@ -53,14 +60,22 @@ class _GastoViewState extends State<GastoView> {
     if (itens.isNotEmpty) {
       final categorias = context.read<CategoriaViewModel>().categorias;
       final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
-      _produtos = itens.map((item) {
-        return {
-          'descricao': item['nome'] ?? '',
-          'quantidade': item['qtd']?.toString() ?? '1',
-          'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-          'categoria': cat
-        };
-      }).toList();
+      _produtos = itens
+          .map((item) => {
+                'descricao': item['nome'] ?? '',
+                'quantidade': item['qtd']?.toString() ?? '1',
+                'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
+                'categoria': cat
+              })
+          .toList();
+    }
+    _descControllers.clear();
+    _qtdControllers.clear();
+    _precoControllers.clear();
+    for (final p in _produtos) {
+      _descControllers.add(TextEditingController(text: p['descricao']));
+      _qtdControllers.add(TextEditingController(text: p['quantidade']));
+      _precoControllers.add(TextEditingController(text: p['preco']));
     }
 
     _totalController.text =
@@ -72,6 +87,15 @@ class _GastoViewState extends State<GastoView> {
     _estabelecimentoController.dispose();
     _localidadeController.dispose();
     _totalController.dispose();
+    for (final c in _descControllers) {
+      c.dispose();
+    }
+    for (final c in _qtdControllers) {
+      c.dispose();
+    }
+    for (final c in _precoControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -81,6 +105,9 @@ class _GastoViewState extends State<GastoView> {
     setState(() {
       _produtos.add(
           {'descricao': '', 'quantidade': '', 'preco': '', 'categoria': cat});
+      _descControllers.add(TextEditingController());
+      _qtdControllers.add(TextEditingController());
+      _precoControllers.add(TextEditingController());
     });
   }
 
@@ -248,14 +275,11 @@ class _GastoViewState extends State<GastoView> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           SizedBox(height: 8),
           ..._produtos.asMap().entries.map((entry) {
+            final index = entry.key;
             Map<String, dynamic> produto = entry.value;
-            // Cria controllers para cada campo de produto para poder preenchê-los
-            final descController =
-                TextEditingController(text: produto['descricao']);
-            final qtdController =
-                TextEditingController(text: produto['quantidade']);
-            final precoController =
-                TextEditingController(text: produto['preco']);
+            final descController = _descControllers[index];
+            final qtdController = _qtdControllers[index];
+            final precoController = _precoControllers[index];
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
