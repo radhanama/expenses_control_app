@@ -39,7 +39,9 @@ dependencies:
   sqflite_common_ffi: ^2.3.3
   sqlite3_flutter_libs: ^0.5.34
   expenses_control:
-    path: ./framework
+    git:
+      url: https://github.com/radhanama/expenses_control_framework.git
+      ref: master
   html: ^0.15.0
   http: ^1.2.1
   fl_chart: ^0.68.0
