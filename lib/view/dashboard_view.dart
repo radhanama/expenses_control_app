@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../view_model/dashboard_view_model.dart';
+import '../view_model/categoria_view_model.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -12,20 +14,7 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  // Dados para o Gráfico de Pizza serão construídos dinamicamente
-
-  // Dados para o Gráfico de Linha (FL_CHART)
-  final List<FlSpot> _lineSpots = const [
-    FlSpot(0, 900), // Mar
-    FlSpot(1, 1100), // Abr
-    FlSpot(2, 1250), // Mai
-    FlSpot(3, 1000), // Jun
-    FlSpot(4, 1350), // Jul
-    FlSpot(5, 1250), // Ago
-  ];
-
-  // Labels para o eixo X do gráfico de linha
-  final List<String> _lineLabels = const ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'];
+  // Dados para o Gráfico de Pizza e de Linha serão construídos dinamicamente
 
   @override
   void initState() {
@@ -58,25 +47,29 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildStatsCards(BuildContext context) {
     final vm = context.watch<DashboardViewModel>();
+    final categorias = context.watch<CategoriaViewModel>().categorias;
+    final catMap = {for (final c in categorias) c.id: c.titulo};
+
+    final cards = <Widget>[
+      _buildStatCard(
+          context, 'Total no Mês', 'R\$ ${vm.resumo.totalGastos.toStringAsFixed(2)}'),
+      _buildStatCard(context, 'Transações', vm.transacoes.toString()),
+      ...vm.resumo.totalPorCategoria.entries.map(
+        (e) => _buildStatCard(
+          context,
+          catMap[e.key] ?? 'Categoria ${e.key}',
+          'R\$ ${e.value.toStringAsFixed(2)}',
+        ),
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Wrap(
         alignment: WrapAlignment.center,
         spacing: 8.0,
         runSpacing: 8.0,
-        children: [
-          _buildStatCard(context, 'Total no Mês',
-              'R\$ ${vm.resumo.totalGastos.toStringAsFixed(2)}'),
-          _buildStatCard(context, 'Transações', vm.transacoes.toString()),
-          _buildStatCard(
-              context,
-              'Alimentação',
-              'R\$ ${vm.resumo.totalPorCategoria['Alimentação']?.toStringAsFixed(2) ?? '0.00'}'),
-          _buildStatCard(
-              context,
-              'Transporte',
-              'R\$ ${vm.resumo.totalPorCategoria['Transporte']?.toStringAsFixed(2) ?? '0.00'}'),
-        ],
+        children: cards,
       ),
     );
   }
@@ -106,6 +99,22 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildLineChart() {
+    final vm = context.watch<DashboardViewModel>();
+    final months = vm.gastosPorMes.keys.toList();
+    final values = vm.gastosPorMes.values.toList();
+
+    final spots = [
+      for (int i = 0; i < values.length; i++)
+        FlSpot(i.toDouble(), values[i])
+    ];
+
+    final labels = months
+        .map((d) => DateFormat('MMM', 'pt_BR').format(d))
+        .toList();
+
+    final maxY =
+        values.isEmpty ? 0.0 : (values.reduce((a, b) => a > b ? a : b) * 1.2);
+
     return Container(
       height: 300,
       margin: const EdgeInsets.all(8),
@@ -135,10 +144,12 @@ class _DashboardViewState extends State<DashboardView> {
                       showTitles: true,
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= labels.length) return const SizedBox.shrink();
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
                           space: 8,
-                          child: Text(_lineLabels[value.toInt()]),
+                          child: Text(labels[idx]),
                         );
                       },
                     ),
@@ -153,12 +164,12 @@ class _DashboardViewState extends State<DashboardView> {
                   border: Border.all(color: const Color(0xff37434d), width: 1),
                 ),
                 minX: 0,
-                maxX: 5,
+                maxX: (values.length - 1).toDouble(),
                 minY: 0,
-                maxY: 1500,
+                maxY: maxY == 0 ? 1 : maxY,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: _lineSpots,
+                    spots: spots,
                     isCurved: true,
                     color: Colors.blue,
                     barWidth: 3,
@@ -193,23 +204,28 @@ class _DashboardViewState extends State<DashboardView> {
           const Text('Distribuição por Categoria',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Expanded(
-            child: Consumer<DashboardViewModel>(
-              builder: (context, vm, _) {
-                final sections = vm.resumo.totalPorCategoria.entries
-                    .map(
-                      (e) => PieChartSectionData(
-                        color: Colors.blue,
-                        value: e.value,
-                        title: '${e.key}\nR\$${e.value.toStringAsFixed(0)}',
-                        radius: 60,
-                        titleStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
-                        titlePositionPercentageOffset: 0.55,
-                      ),
-                    )
-                    .toList();
+            child: Consumer2<DashboardViewModel, CategoriaViewModel>(
+              builder: (context, vm, catVm, _) {
+                final catMap = {for (final c in catVm.categorias) c.id: c.titulo};
+                final entries = vm.resumo.totalPorCategoria.entries.toList();
+                final sections = <PieChartSectionData>[];
+                for (int i = 0; i < entries.length; i++) {
+                  final e = entries[i];
+                  sections.add(
+                    PieChartSectionData(
+                      color: Colors.primaries[i % Colors.primaries.length],
+                      value: e.value,
+                      title:
+                          '${catMap[e.key] ?? 'Cat'}\nR\$${e.value.toStringAsFixed(0)}',
+                      radius: 60,
+                      titleStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      titlePositionPercentageOffset: 0.55,
+                    ),
+                  );
+                }
                 return PieChart(
                   PieChartData(
                     sections: sections,
