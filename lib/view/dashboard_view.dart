@@ -4,12 +4,18 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../view_model/dashboard_view_model.dart';
 
-class DashboardView extends StatelessWidget {
+class DashboardView extends StatefulWidget {
+  const DashboardView({super.key});
 
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
   // Dados para o Gráfico de Pizza serão construídos dinamicamente
 
   // Dados para o Gráfico de Linha (FL_CHART)
-  final List<FlSpot> _lineSpots = [
+  final List<FlSpot> _lineSpots = const [
     FlSpot(0, 900), // Mar
     FlSpot(1, 1100), // Abr
     FlSpot(2, 1250), // Mai
@@ -19,18 +25,30 @@ class DashboardView extends StatelessWidget {
   ];
 
   // Labels para o eixo X do gráfico de linha
-  final List<String> _lineLabels = ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'];
+  final List<String> _lineLabels = const ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => context.read<DashboardViewModel>().carregarResumo());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<DashboardViewModel>();
+    if (vm.loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard de Gastos'),
+        title: const Text('Dashboard de Gastos'),
         centerTitle: true,
       ),
       body: ListView(
         children: [
-          _buildStatsCards(context), // Passe o contexto explicitamente aqui
+          _buildStatsCards(context),
           _buildLineChart(),
           _buildPieChart(),
         ],
@@ -38,8 +56,8 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  // O método _buildStatCard precisa receber o contexto, já que DashboardView é StatelessWidget
   Widget _buildStatsCards(BuildContext context) {
+    final vm = context.watch<DashboardViewModel>();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Wrap(
@@ -47,31 +65,41 @@ class DashboardView extends StatelessWidget {
         spacing: 8.0,
         runSpacing: 8.0,
         children: [
-          _buildStatCard(context, 'Total no Mês', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalGastos.toStringAsFixed(2)}'),
-          _buildStatCard(context, 'Transações', context.watch<DashboardViewModel>().transacoes.toString()),
-          _buildStatCard(context, 'Alimentação', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalPorCategoria['Alimentação']?.toStringAsFixed(2) ?? '0.00'}'),
-          _buildStatCard(context, 'Transporte', 'R\$ ${context.watch<DashboardViewModel>().resumo.totalPorCategoria['Transporte']?.toStringAsFixed(2) ?? '0.00'}'),
+          _buildStatCard(context, 'Total no Mês',
+              'R\$ ${vm.resumo.totalGastos.toStringAsFixed(2)}'),
+          _buildStatCard(context, 'Transações', vm.transacoes.toString()),
+          _buildStatCard(
+              context,
+              'Alimentação',
+              'R\$ ${vm.resumo.totalPorCategoria['Alimentação']?.toStringAsFixed(2) ?? '0.00'}'),
+          _buildStatCard(
+              context,
+              'Transporte',
+              'R\$ ${vm.resumo.totalPorCategoria['Transporte']?.toStringAsFixed(2) ?? '0.00'}'),
         ],
       ),
     );
   }
 
-  // Este método já recebe o contexto, está correto
   Widget _buildStatCard(BuildContext context, String title, String value) {
     return Container(
       width: MediaQuery.of(context).size.width / 2 - 20,
-      padding: EdgeInsets.all(12),
-      margin: EdgeInsets.all(4),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: TextStyle(fontSize: 16, color: Colors.blue)),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontSize: 16, color: Colors.blue)),
+          Text(value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -80,31 +108,33 @@ class DashboardView extends StatelessWidget {
   Widget _buildLineChart() {
     return Container(
       height: 300,
-      margin: EdgeInsets.all(8),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+        ],
       ),
       child: Column(
         children: [
-          Text('Evolução de Gastos (Últimos 6 meses)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Evolução de Gastos (Últimos 6 meses)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Expanded(
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: true), // Mostrar grade
+                gridData: FlGridData(show: true),
                 titlesData: FlTitlesData(
                   show: true,
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, reservedSize: 40), // Eixo Y
-                  ),
+                  leftTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
-                        // Converte o valor numérico do eixo X para a label do mês
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
                           space: 8,
@@ -113,26 +143,28 @@ class DashboardView extends StatelessWidget {
                       },
                     ),
                   ),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Não mostrar títulos em cima
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Não mostrar títulos na direita
+                  topTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                borderData: FlBorderData( // Bordas do gráfico
+                borderData: FlBorderData(
                   show: true,
                   border: Border.all(color: const Color(0xff37434d), width: 1),
                 ),
                 minX: 0,
-                maxX: 5, // 6 meses (índices de 0 a 5)
+                maxX: 5,
                 minY: 0,
-                maxY: 1500, // Ajuste este valor conforme o máximo esperado dos seus gastos
+                maxY: 1500,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: _lineSpots, // Seus pontos de dados
-                    isCurved: true, // Curva suave
+                    spots: _lineSpots,
+                    isCurved: true,
                     color: Colors.blue,
                     barWidth: 3,
                     isStrokeCapRound: true,
-                    dotData: FlDotData(show: true), // Mostrar pontos nos dados
-                    belowBarData: BarAreaData(show: false), // Não preencher área abaixo da linha
+                    dotData: FlDotData(show: true),
+                    belowBarData: BarAreaData(show: false),
                   ),
                 ],
               ),
@@ -146,16 +178,20 @@ class DashboardView extends StatelessWidget {
   Widget _buildPieChart() {
     return Container(
       height: 300,
-      margin: EdgeInsets.all(8),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: Offset(0, 1))],
+        boxShadow: [
+          BoxShadow(
+              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+        ],
       ),
       child: Column(
         children: [
-          Text('Distribuição por Categoria', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Distribuição por Categoria',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Expanded(
             child: Consumer<DashboardViewModel>(
               builder: (context, vm, _) {
