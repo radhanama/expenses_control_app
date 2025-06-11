@@ -5,7 +5,6 @@ WORKDIR /src
 # -- dependency‑cache layer --
 COPY pubspec.* ./
 # also copy any local‑path packages referenced in pubspec
-COPY framework ./framework          # add this line (or whatever path you use)
 RUN flutter pub get
 
 # -- source --
