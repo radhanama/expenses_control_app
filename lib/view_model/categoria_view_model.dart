@@ -38,6 +38,15 @@ class CategoriaViewModel extends ChangeNotifier {
     await carregarCategorias();
   }
 
+  Categoria? obterPorId(int? id) {
+    if (id == null) return null;
+    try {
+      return _categorias.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> deletarCategoria(int id) async {
     await _repo.delete(id);
     await carregarCategorias();
