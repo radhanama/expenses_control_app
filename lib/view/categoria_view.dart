@@ -1,3 +1,4 @@
+import 'package:expenses_control_app/view_model/usuario_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/categoria_view_model.dart';
@@ -35,26 +36,88 @@ class _CategoriaViewState extends State<CategoriaView> {
     );
   }
 
+  void _showAddCategoryDialog(BuildContext context) {
+    final tituloCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    int? parentId;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Nova Categoria'),
+          content: StatefulBuilder(
+            builder: (ctx, setState) {
+              final categorias = context.read<CategoriaViewModel>().categorias;
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: tituloCtrl,
+                      decoration: InputDecoration(hintText: 'Título'),
+                    ),
+                    SizedBox(height: 8),
+                    TextField(
+                      controller: descCtrl,
+                      decoration: InputDecoration(hintText: 'Descrição'),
+                    ),
+                    SizedBox(height: 8),
+                    DropdownButtonFormField<int?>(
+                      value: parentId,
+                      decoration: InputDecoration(labelText: 'Categoria Pai'),
+                      items: [
+                        DropdownMenuItem<int?>(
+                            value: null, child: Text('Nenhuma')),
+                        ...categorias
+                            .map((c) => DropdownMenuItem<int?>(
+                                  value: c.id,
+                                  child: Text(c.titulo),
+                                ))
+                            .toList(),
+                      ],
+                      onChanged: (v) => setState(() => parentId = v),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final usuarioId =
+                    context.read<UsuarioViewModel>().usuarioLogado?.id ?? 0;
+                await context.read<CategoriaViewModel>().adicionarCategoria(
+                      tituloCtrl.text,
+                      descCtrl.text,
+                      usuarioId,
+                      parentId: parentId,
+                    );
+                if (mounted) Navigator.of(ctx).pop();
+              },
+              child: Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Gerenciar Categorias'),
         centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.add),
-        //     onPressed: () async {
-        //       final newCategory = await Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => NovaCategoriaScreen()),
-        //       );
-        //       if (newCategory != null && newCategory.isNotEmpty) {
-        //         _addCategory(newCategory);
-        //       }
-        //     },
-        //   ),
-        // ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddCategoryDialog(context),
+        child: Icon(Icons.add),
       ),
       body: Consumer<CategoriaViewModel>(
         builder: (context, vm, _) => ListView.builder(

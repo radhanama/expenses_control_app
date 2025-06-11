@@ -76,9 +76,11 @@ packages:
   expenses_control:
     dependency: "direct main"
     description:
-      path: framework
-      relative: true
-    source: path
+      path: "."
+      ref: master
+      resolved-ref: "6dc4e12395f8d05a81353963633bc593dcfd43c9"
+      url: "https://github.com/radhanama/expenses_control_framework.git"
+    source: git
     version: "0.0.1"
   fake_async:
     dependency: transitive

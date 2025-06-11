@@ -20,9 +20,15 @@ class CategoriaViewModel extends ChangeNotifier {
   }
 
   Future<void> adicionarCategoria(
-      String titulo, String descricao, int usuarioId) async {
+      String titulo, String descricao, int usuarioId,
+      {int? parentId}) async {
     await _repo.create(
-      Categoria(titulo: titulo, descricao: descricao, usuarioId: usuarioId),
+      Categoria(
+        titulo: titulo,
+        descricao: descricao,
+        usuarioId: usuarioId,
+        parentId: parentId,
+      ),
     );
     await carregarCategorias();
   }

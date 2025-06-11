@@ -51,8 +51,8 @@ class _DashboardViewState extends State<DashboardView> {
     final catMap = {for (final c in categorias) c.id: c.titulo};
 
     final cards = <Widget>[
-      _buildStatCard(
-          context, 'Total no Mês', 'R\$ ${vm.resumo.totalGastos.toStringAsFixed(2)}'),
+      _buildStatCard(context, 'Total no Mês',
+          'R\$ ${vm.resumo.totalGastos.toStringAsFixed(2)}'),
       _buildStatCard(context, 'Transações', vm.transacoes.toString()),
       ...vm.resumo.totalPorCategoria.entries.map(
         (e) => _buildStatCard(
@@ -84,7 +84,9 @@ class _DashboardViewState extends State<DashboardView> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+              blurRadius: 2,
+              color: Colors.grey.withOpacity(0.2),
+              offset: const Offset(0, 1))
         ],
       ),
       child: Column(
@@ -92,7 +94,8 @@ class _DashboardViewState extends State<DashboardView> {
         children: [
           Text(title, style: const TextStyle(fontSize: 16, color: Colors.blue)),
           Text(value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -104,13 +107,11 @@ class _DashboardViewState extends State<DashboardView> {
     final values = vm.gastosPorMes.values.toList();
 
     final spots = [
-      for (int i = 0; i < values.length; i++)
-        FlSpot(i.toDouble(), values[i])
+      for (int i = 0; i < values.length; i++) FlSpot(i.toDouble(), values[i])
     ];
 
-    final labels = months
-        .map((d) => DateFormat('MMM', 'pt_BR').format(d))
-        .toList();
+    final labels =
+        months.map((d) => DateFormat('MMM', 'pt_BR').format(d)).toList();
 
     final maxY =
         values.isEmpty ? 0.0 : (values.reduce((a, b) => a > b ? a : b) * 1.2);
@@ -124,7 +125,9 @@ class _DashboardViewState extends State<DashboardView> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+              blurRadius: 2,
+              color: Colors.grey.withOpacity(0.2),
+              offset: const Offset(0, 1))
         ],
       ),
       child: Column(
@@ -137,15 +140,19 @@ class _DashboardViewState extends State<DashboardView> {
                 gridData: FlGridData(show: true),
                 titlesData: FlTitlesData(
                   show: true,
-                  leftTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40)),
+                  leftTitles: AxisTitles(
+                      sideTitles:
+                          SideTitles(showTitles: true, reservedSize: 40)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
+                      interval: 1,
                       getTitlesWidget: (value, meta) {
+                        if (value % 1 != 0) return const SizedBox.shrink();
                         final idx = value.toInt();
-                        if (idx < 0 || idx >= labels.length) return const SizedBox.shrink();
+                        if (idx < 0 || idx >= labels.length)
+                          return const SizedBox.shrink();
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
                           space: 8,
@@ -196,7 +203,9 @@ class _DashboardViewState extends State<DashboardView> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              blurRadius: 2, color: Colors.grey.withOpacity(0.2), offset: const Offset(0, 1))
+              blurRadius: 2,
+              color: Colors.grey.withOpacity(0.2),
+              offset: const Offset(0, 1))
         ],
       ),
       child: Column(
@@ -206,7 +215,9 @@ class _DashboardViewState extends State<DashboardView> {
           Expanded(
             child: Consumer2<DashboardViewModel, CategoriaViewModel>(
               builder: (context, vm, catVm, _) {
-                final catMap = {for (final c in catVm.categorias) c.id: c.titulo};
+                final catMap = {
+                  for (final c in catVm.categorias) c.id: c.titulo
+                };
                 final entries = vm.resumo.totalPorCategoria.entries.toList();
                 final sections = <PieChartSectionData>[];
                 for (int i = 0; i < entries.length; i++) {
