@@ -2,6 +2,8 @@ import 'package:expenses_control_app/view_model/usuario_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/categoria_view_model.dart';
+import '../view_model/usuario_view_model.dart';
+import 'package:expenses_control/models/categoria.dart';
 
 class CategoriaView extends StatefulWidget {
   @override
@@ -9,6 +11,15 @@ class CategoriaView extends StatefulWidget {
 }
 
 class _CategoriaViewState extends State<CategoriaView> {
+  Categoria? _findCategoryById(List<Categoria> categorias, int? id) {
+    if (id == null) return null;
+    try {
+      return categorias.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _deleteCategory(BuildContext context, int id) {
     showDialog(
       context: context,
@@ -108,6 +119,81 @@ class _CategoriaViewState extends State<CategoriaView> {
     );
   }
 
+  void _showEditCategoryDialog(BuildContext context, Categoria categoria) {
+    final tituloCtrl = TextEditingController(text: categoria.titulo);
+    final descCtrl = TextEditingController(text: categoria.descricao);
+    int? parentId = categoria.parentId;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Editar Categoria'),
+          content: StatefulBuilder(
+            builder: (ctx, setState) {
+              final categorias = context
+                  .read<CategoriaViewModel>()
+                  .categorias
+                  .where((c) => c.id != categoria.id)
+                  .toList();
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: tituloCtrl,
+                      decoration: InputDecoration(hintText: 'Título'),
+                    ),
+                    SizedBox(height: 8),
+                    TextField(
+                      controller: descCtrl,
+                      decoration: InputDecoration(hintText: 'Descrição'),
+                    ),
+                    SizedBox(height: 8),
+                    DropdownButtonFormField<int?>(
+                      value: parentId,
+                      decoration: InputDecoration(labelText: 'Categoria Pai'),
+                      items: [
+                        DropdownMenuItem<int?>(
+                            value: null, child: Text('Nenhuma')),
+                        ...categorias
+                            .map((c) => DropdownMenuItem<int?>(
+                                  value: c.id,
+                                  child: Text(c.titulo),
+                                ))
+                            .toList(),
+                      ],
+                      onChanged: (v) => setState(() => parentId = v),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await context.read<CategoriaViewModel>().atualizarCategoria(
+                      categoria.copyWith(
+                        titulo: tituloCtrl.text,
+                        descricao: descCtrl.text,
+                        parentId: parentId,
+                      ),
+                    );
+                if (mounted) Navigator.of(ctx).pop();
+              },
+              child: Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,6 +211,10 @@ class _CategoriaViewState extends State<CategoriaView> {
           itemCount: vm.categorias.length,
           itemBuilder: (context, index) {
             final category = vm.categorias[index];
+            final parent = _findCategoryById(vm.categorias, category.parentId);
+            final displayTitle = parent != null
+                ? '${parent.titulo} > ${category.titulo}'
+                : category.titulo;
             return Card(
               margin: EdgeInsets.only(bottom: 8.0),
               elevation: 1,
@@ -135,49 +225,12 @@ class _CategoriaViewState extends State<CategoriaView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(category.titulo, style: TextStyle(fontSize: 16)),
+                    Text(displayTitle, style: TextStyle(fontSize: 16)),
                     Row(
                       children: [
                         ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                TextEditingController _editController =
-                                    TextEditingController(
-                                        text: category.titulo);
-                                return AlertDialog(
-                                  title: Text('Renomear Categoria'),
-                                  content: TextField(
-                                    controller: _editController,
-                                    decoration: InputDecoration(
-                                        hintText: 'Novo nome da categoria'),
-                                  ),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: Text('Cancelar'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: Text('Salvar'),
-                                      onPressed: () async {
-                                        await context
-                                            .read<CategoriaViewModel>()
-                                            .atualizarCategoria(
-                                              category.copyWith(
-                                                  titulo: _editController.text),
-                                            );
-                                        if (mounted)
-                                          Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
+                          onPressed: () =>
+                              _showEditCategoryDialog(context, category),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
