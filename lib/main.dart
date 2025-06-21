@@ -11,7 +11,7 @@ import 'package:expenses_control_app/models/services/web_scrapping_service.dart'
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
-import 'package:expenses_control_app/models/services/statistica_service.dart';
+import 'package:expenses_control_app/models/services/dashboard_service.dart';
 import 'models/databases/database.dart';
 import 'models/data/categoria_repository.dart';
 import 'models/services/authentication_service.dart';
@@ -51,7 +51,7 @@ void main() async {
           ),
         ),
         Provider(create: (_) => GastoRepository(db)),
-        Provider(create: (_) => EstatisticaService()),
+        Provider(create: (_) => DashboardService()),
         Provider(create: (_) => WebScrapingService()),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
@@ -65,7 +65,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (ctx) => DashboardViewModel(
             ctx.read<GastoRepository>(),
-            ctx.read<EstatisticaService>(),
+            ctx.read<DashboardService>(),
           ),
         ),
       ],
