@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:expenses_control/models/data/usuario_repository.dart';
+import 'package:expenses_control_app/view_model/smart_analysis_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:expenses_control_app/view/main_view.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
+import 'package:expenses_control_app/models/services/smart_analysis_service.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
@@ -53,6 +55,7 @@ void main() async {
         Provider(create: (_) => GastoRepository(db)),
         Provider(create: (_) => EstatisticaService()),
         Provider(create: (_) => WebScrapingService()),
+        Provider(create: (_) => SmartAnalysisService()),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
@@ -66,6 +69,13 @@ void main() async {
           create: (ctx) => DashboardViewModel(
             ctx.read<GastoRepository>(),
             ctx.read<EstatisticaService>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => SmartAnalysisViewModel(
+            ctx.read<GastoRepository>(),
+            ctx.read<CategoriaRepository>(),
+            ctx.read<SmartAnalysisService>(),
           ),
         ),
       ],
