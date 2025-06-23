@@ -13,9 +13,9 @@ class DashboardService {
   void setEstrategiaAvancada(IEstrategiaDashboard estrategiaAvancada) => _estrategiaAvancada = estrategiaAvancada;
     
   Future<DashboardDTO> geraDashboardCompleto(List<Gasto> gastos) async {
-    final dtoComum = _estrategiaComum.gerarEstatistica(gastos);
+    final dtoComum = _estrategiaComum.geraRelatorio(gastos);
 
-    final dtoAvancado = _estrategiaAvancada.gerarEstatistica(gastos);
+    final dtoAvancado = _estrategiaAvancada.geraRelatorio(gastos);
 
     // Mescla os resultados usando o método copyWith.
     final dtoFinal = dtoComum.copyWith(
