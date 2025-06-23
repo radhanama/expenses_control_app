@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:expenses_control_app/view/main_view.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
+import 'package:expenses_control_app/models/services/gemini_service.dart';
+import 'package:expenses_control_app/utils/secrets.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
@@ -53,10 +55,12 @@ void main() async {
         Provider(create: (_) => GastoRepository(db)),
         Provider(create: (_) => DashboardService()),
         Provider(create: (_) => WebScrapingService()),
+        Provider(create: (_) => GeminiService(geminiApiKey)),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
             repo: ctx.read<GastoRepository>(),
+            geminiService: ctx.read<GeminiService>(),
           ),
         ),
         ChangeNotifierProvider(

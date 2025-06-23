@@ -65,6 +65,48 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
     }
   }
 
+  void _showTextInputDialog() async {
+    final controller = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Descreva sua compra'),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: InputDecoration(hintText: 'Ex: Comprei 5 p\u00e3es no mercado'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: Text('Processar'),
+          ),
+        ],
+      ),
+    );
+
+    if (text != null && text.trim().isNotEmpty && mounted) {
+      final viewModel = context.read<GastoViewModel>();
+      final success = await viewModel.processarTextoGasto(text);
+      if (success && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GastoView(dadosIniciais: viewModel.scrapedData),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(viewModel.errorMessage ?? 'Falha ao processar texto.')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<GastoViewModel>(
@@ -145,6 +187,20 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                       ),
                     ),
                     label: Text('Inserir Manualmente', style: TextStyle(fontSize: 18)),
+                  ),
+                  SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    icon: Icon(Icons.text_fields),
+                    onPressed: _showTextInputDialog,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.blue, width: 1.5),
+                      foregroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    label: Text('Inserir via Texto', style: TextStyle(fontSize: 18)),
                   ),
                 ],
               ),
