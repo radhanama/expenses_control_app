@@ -63,6 +63,14 @@ class _GeminiTextViewState extends State<GeminiTextView> {
                       onPressed: _submit,
                       child: const Text('Enviar'),
                     ),
+              if (vm.errorMessage != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  vm.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),

@@ -167,6 +167,14 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                     ),
                     label: Text('Inserir Manualmente', style: TextStyle(fontSize: 18)),
                   ),
+                  if (viewModel.errorMessage != null) ...[
+                    SizedBox(height: 16),
+                    Text(
+                      viewModel.errorMessage!,
+                      style: TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ],
               ),
               // Indicador de Carregamento

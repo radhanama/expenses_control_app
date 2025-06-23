@@ -42,7 +42,8 @@ class GastoViewModel extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage =
+          e.toString().replaceFirst(RegExp(r'^Exception: ?'), '');
       _isLoading = false;
       notifyListeners();
       return false;
@@ -69,7 +70,8 @@ class GastoViewModel extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage =
+          e.toString().replaceFirst(RegExp(r'^Exception: ?'), '');
       _isLoading = false;
       notifyListeners();
       return false;
