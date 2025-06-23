@@ -11,11 +11,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<Database> openAppDatabase() async {
   // ───── resolve file location (~/Documents on iOS/Android) ─────
   final docsDir = await getApplicationDocumentsDirectory();
-  final path = p.join(docsDir.path, 'finance.db');
+  final dbName = dotenv.env['DB_FILENAME'] ?? 'finance.db';
+  final path = p.join(docsDir.path, dbName);
 
   // ───── Open and migrate ─────
   return openDatabase(

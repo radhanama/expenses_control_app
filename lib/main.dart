@@ -12,6 +12,8 @@ import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
 import 'package:expenses_control_app/models/services/dashboard_service.dart';
+import 'package:expenses_control_app/models/services/gemini_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'models/databases/database.dart';
 import 'models/data/categoria_repository.dart';
 import 'models/services/authentication_service.dart';
@@ -21,6 +23,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await initializeDateFormatting('pt_BR', null);
 
   if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
@@ -53,9 +56,11 @@ void main() async {
         Provider(create: (_) => GastoRepository(db)),
         Provider(create: (_) => DashboardService()),
         Provider(create: (_) => WebScrapingService()),
+        Provider(create: (_) => GeminiService(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '')),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
+            geminiService: ctx.read<GeminiService>(),
             repo: ctx.read<GastoRepository>(),
           ),
         ),

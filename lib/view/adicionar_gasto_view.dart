@@ -1,4 +1,5 @@
 import 'package:expenses_control_app/view/gasto_view.dart';
+import 'package:expenses_control_app/view/gemini_text_view.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart'; // Importe o novo pacote
@@ -127,6 +128,26 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                     ),
                   ),
                   SizedBox(height: 30),
+                  // Botão de Inserção por texto usando Gemini
+                  OutlinedButton.icon(
+                    icon: Icon(Icons.text_fields),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const GeminiTextView()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.green, width: 1.5),
+                      foregroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    label: Text('Inserir por Texto', style: TextStyle(fontSize: 18)),
+                  ),
+                  SizedBox(height: 12),
                   // Botão de Inserção Manual
                   OutlinedButton.icon(
                     icon: Icon(Icons.edit),
