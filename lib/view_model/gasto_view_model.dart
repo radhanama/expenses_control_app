@@ -1,17 +1,21 @@
 import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
+import 'package:expenses_control_app/models/services/gemini_service.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'package:flutter/material.dart';
 
 class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
   final GastoRepository _repo;
+  final GeminiService _geminiService;
 
   GastoViewModel({
     required WebScrapingService webScrapingService,
     required GastoRepository repo,
+    required GeminiService geminiService,
   })  : _webScrapingService = webScrapingService,
-        _repo = repo;
+        _repo = repo,
+        _geminiService = geminiService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -43,6 +47,25 @@ class GastoViewModel extends ChangeNotifier {
 
     try {
       _scrapedData = await _webScrapingService.scrapeNfceFromUrl(url);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> processarTextoGasto(String texto) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _scrapedData = null;
+    notifyListeners();
+
+    try {
+      _scrapedData = await _geminiService.analisarTextoGasto(texto);
       _isLoading = false;
       notifyListeners();
       return true;
