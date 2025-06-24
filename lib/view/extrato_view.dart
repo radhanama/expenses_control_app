@@ -83,13 +83,27 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildMonthPicker(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
-          Icon(Icons.arrow_drop_down),
-        ],
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _selectedMonth,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+          locale: const Locale('pt', 'BR'),
+        );
+        if (picked != null) {
+          setState(() => _selectedMonth = DateTime(picked.year, picked.month));
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
       ),
     );
   }
