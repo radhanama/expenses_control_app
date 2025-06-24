@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class GeminiService {
   final String apiKey;
@@ -52,6 +53,8 @@ class GeminiService {
         ? '\nClassifique cada item na melhor categoria dentre: ${categorias.join(', ')}.'
         : '';
 
+    final hoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
     final prompt =
         '''Converta a seguinte descricao de compra em JSON no formato:
 {
@@ -61,6 +64,7 @@ class GeminiService {
   "compra": {"valor_a_pagar": numero}
 }
 $categoriasTexto
+Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada. Não mencione a data na resposta.
 Retorne apenas o JSON sem explicacoes.
 $text''';
 
@@ -104,6 +108,8 @@ $text''';
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
             apiKey);
 
+    final hoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
     final prompt =
         '''Extraia as informações da nota fiscal eletrônica abaixo e retorne apenas o JSON no formato:
 {
@@ -112,6 +118,7 @@ $text''';
   "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero}],
   "compra": {"valor_a_pagar": numero}
 }
+Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada. Não mencione a data na resposta.
 HTML:
 $html''';
 
