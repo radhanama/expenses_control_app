@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../view_model/dashboard_view_model.dart';
 import '../view_model/categoria_view_model.dart';
 
-
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
@@ -71,7 +70,8 @@ class _DashboardViewState extends State<DashboardView> {
             context,
             'vs. Mês Anterior',
             '${isPositive ? '+' : ''}${comparativo.toStringAsFixed(1)}%',
-            valueColor: isPositive ? Colors.red.shade700 : Colors.green.shade700,
+            valueColor:
+                isPositive ? Colors.red.shade700 : Colors.green.shade700,
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class _DashboardViewState extends State<DashboardView> {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           return SideTitleWidget(
-                            axisSide: meta.axisSide,
+                            meta: meta,
                             space: 4,
                             child: Text(labels[value.toInt() - 1]),
                           );
@@ -292,8 +292,8 @@ class _DashboardViewState extends State<DashboardView> {
                       titlesData: FlTitlesData(
                         show: true,
                         leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                                showTitles: true, reservedSize: 40)),
+                            sideTitles:
+                                SideTitles(showTitles: true, reservedSize: 40)),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -306,7 +306,7 @@ class _DashboardViewState extends State<DashboardView> {
                               if (idx < 0 || idx >= labels.length)
                                 return const SizedBox.shrink();
                               return SideTitleWidget(
-                                axisSide: meta.axisSide,
+                                meta: meta,
                                 space: 8,
                                 child: Text(labels[idx]),
                               );
@@ -348,57 +348,56 @@ class _DashboardViewState extends State<DashboardView> {
   // Constrói o gráfico de pizza para distribuição por categoria.
   Widget _buildPieChart() {
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.all(8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text('Distribuição por Categoria',
-                style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 250,
-              child:
-                  Consumer2<DashboardViewModel, CategoriaViewModel>(
-                builder: (context, vm, catVm, _) {
-                  final catMap = {
-                    for (final c in catVm.categorias) c.id: c.titulo
-                  };
-                  final entries =
-                      vm.resumo.totalPorCategoria.entries.toList();
-                  final sections = <PieChartSectionData>[];
-                  for (int i = 0; i < entries.length; i++) {
-                    final e = entries[i];
-                    sections.add(
-                      PieChartSectionData(
-                        color: Colors.primaries[
-                            i % Colors.primaries.length],
-                        value: e.value,
-                        title:
-                            '${catMap[e.key] ?? 'Cat'}\nR\$${e.value.toStringAsFixed(0)}',
-                        radius: 80,
-                        titleStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
-                        titlePositionPercentageOffset: 0.55,
-                      ),
-                    );
-                  }
-                  return PieChart(
-                    PieChartData(
-                      sections: sections,
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 40,
-                      borderData: FlBorderData(show: false),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        )));
+        elevation: 2,
+        margin: const EdgeInsets.all(8.0),
+        child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const Text('Distribuição por Categoria',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 250,
+                  child: Consumer2<DashboardViewModel, CategoriaViewModel>(
+                    builder: (context, vm, catVm, _) {
+                      final catMap = {
+                        for (final c in catVm.categorias) c.id: c.titulo
+                      };
+                      final entries =
+                          vm.resumo.totalPorCategoria.entries.toList();
+                      final sections = <PieChartSectionData>[];
+                      for (int i = 0; i < entries.length; i++) {
+                        final e = entries[i];
+                        sections.add(
+                          PieChartSectionData(
+                            color:
+                                Colors.primaries[i % Colors.primaries.length],
+                            value: e.value,
+                            title:
+                                '${catMap[e.key] ?? 'Cat'}\nR\$${e.value.toStringAsFixed(0)}',
+                            radius: 80,
+                            titleStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                            titlePositionPercentageOffset: 0.55,
+                          ),
+                        );
+                      }
+                      return PieChart(
+                        PieChartData(
+                          sections: sections,
+                          sectionsSpace: 2,
+                          centerSpaceRadius: 40,
+                          borderData: FlBorderData(show: false),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            )));
   }
 }
