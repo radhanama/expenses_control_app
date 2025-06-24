@@ -1,16 +1,29 @@
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart' as dom;
+import 'gemini_service.dart';
 
 class WebScrapingService {
+  final GeminiService _gemini;
+
+  WebScrapingService({required GeminiService geminiService})
+      : _gemini = geminiService;
+
   /// Busca o conteúdo HTML de uma URL da NFC-e e o analisa.
   Future<Map<String, dynamic>> scrapeNfceFromUrl(String url) async {
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        // Se a requisição foi bem-sucedida, passa o HTML para a função de parsing
-        return _parseNfceHtmlDart(response.body);
+        try {
+          final data = _parseNfceHtmlDart(response.body);
+          if (data['itens'] == null || (data['itens'] as List).isEmpty) {
+            return await _gemini.parseExpenseFromHtml(response.body);
+          }
+          return data;
+        } catch (_) {
+          return await _gemini.parseExpenseFromHtml(response.body);
+        }
       } else {
         throw Exception('Falha ao carregar a página da nota fiscal. Status: ${response.statusCode}');
       }

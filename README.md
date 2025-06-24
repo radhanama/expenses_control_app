@@ -38,3 +38,9 @@ Comprei 5 pães de queijo no Zona Sul do Rio.
 
 O Gemini retornará um JSON estruturado e o formulário será preenchido
 automaticamente para revisão.
+
+### Falha no scraping de notas fiscais
+
+Quando a leitura direta da NFC-e pelo scraper falha, o aplicativo envia o
+HTML obtido da nota fiscal para o Gemini, que extrai os dados no mesmo formato
+JSON. Assim ainda é possível preencher a tela mesmo que o layout do site mude.
