@@ -14,8 +14,11 @@ class DashboardViewModel extends ChangeNotifier {
 
   bool _loading = false;
   DashboardDTO _resumo = DashboardDTO.vazio;
+  String? _errorMessage;
 
   bool get loading => _loading;
+
+  String? get errorMessage => _errorMessage;
   
   DashboardDTO get resumo => _resumo;
   
@@ -28,13 +31,18 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> carregarResumo() async {
     _loading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    final gastos = await _repo.findAll();
-    _resumo = await _service.geraDashboardCompleto(gastos);
-    await _notificacoes.gerarSugestoes();
-
-    _loading = false;
-    notifyListeners();
+    try {
+      final gastos = await _repo.findAll();
+      _resumo = await _service.geraDashboardCompleto(gastos);
+      await _notificacoes.gerarSugestoes();
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
 }

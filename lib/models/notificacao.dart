@@ -9,6 +9,7 @@ class Notificacao with EntityMapper {
   final String mensagem;
   final DateTime data;
   final bool lida;
+  final int usuarioId;
 
   const Notificacao({
     this.id,
@@ -16,6 +17,7 @@ class Notificacao with EntityMapper {
     required this.mensagem,
     required this.data,
     this.lida = false,
+    required this.usuarioId,
   });
 
   @override
@@ -27,6 +29,7 @@ class Notificacao with EntityMapper {
         tipo: NotificationTipo.LEMBRETE,
         mensagem: '',
         data: DateTime.now(),
+        usuarioId: 0,
       );
     }
     return Notificacao(
@@ -40,6 +43,7 @@ class Notificacao with EntityMapper {
           ? DateTime.parse(map['data'] as String)
           : DateTime.now(),
       lida: (map['lida'] as int?) == 1,
+      usuarioId: (map['usuario_id'] as int?) ?? 0,
     );
   }
 
@@ -50,6 +54,7 @@ class Notificacao with EntityMapper {
         'mensagem': mensagem,
         'data': data.toIso8601String(),
         'lida': lida ? 1 : 0,
+        'usuario_id': usuarioId,
       };
 
   Notificacao marcarComoLida() => copyWith(lida: true);
@@ -60,6 +65,7 @@ class Notificacao with EntityMapper {
     String? mensagem,
     DateTime? data,
     bool? lida,
+    int? usuarioId,
   }) =>
       Notificacao(
         id: id ?? this.id,
@@ -67,5 +73,6 @@ class Notificacao with EntityMapper {
         mensagem: mensagem ?? this.mensagem,
         data: data ?? this.data,
         lida: lida ?? this.lida,
+        usuarioId: usuarioId ?? this.usuarioId,
       );
 }
