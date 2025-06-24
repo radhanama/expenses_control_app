@@ -13,12 +13,16 @@ import 'package:expenses_control_app/view_model/extrato_view_model.dart';
 import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
 import 'package:expenses_control_app/models/services/dashboard_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
+import 'package:expenses_control_app/models/services/notificacao_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'models/databases/database.dart';
 import 'models/data/categoria_repository.dart';
+import 'models/data/meta_repository.dart';
+import 'models/data/notificacao_repository.dart';
 import 'models/services/authentication_service.dart';
 import 'view_model/usuario_view_model.dart';
 import 'view_model/categoria_view_model.dart';
+import 'view_model/meta_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
@@ -55,8 +59,23 @@ void main() async {
         ),
         Provider(create: (_) => GastoRepository(db)),
         Provider(create: (_) => DashboardService()),
-        Provider(create: (_) => WebScrapingService()),
+        Provider(create: (_) => MetaRepository(db)),
+        ChangeNotifierProvider(
+          create: (ctx) => MetaViewModel(ctx.read<MetaRepository>())
+            ..carregarMetas(),
+        ),
+        Provider(create: (_) => NotificacaoRepository(db)),
         Provider(create: (_) => GeminiService(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '')),
+        Provider(
+          create: (ctx) => NotificacaoService(
+            gastoRepo: ctx.read<GastoRepository>(),
+            metaRepo: ctx.read<MetaRepository>(),
+            repo: ctx.read<NotificacaoRepository>(),
+            dashboard: ctx.read<DashboardService>(),
+            gemini: ctx.read<GeminiService>(),
+          ),
+        ),
+        Provider(create: (_) => WebScrapingService()),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
@@ -71,6 +90,7 @@ void main() async {
           create: (ctx) => DashboardViewModel(
             ctx.read<GastoRepository>(),
             ctx.read<DashboardService>(),
+            ctx.read<NotificacaoService>(),
           ),
         ),
       ],

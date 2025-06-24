@@ -2,13 +2,15 @@ import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:expenses_control/models/dashboard/dashboard_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:expenses_control_app/models/services/dashboard_service.dart';
+import 'package:expenses_control_app/models/services/notificacao_service.dart';
 
 /// ViewModel responsável por gerir o estado e a lógica de negócio do Dashboard.
 class DashboardViewModel extends ChangeNotifier {
   final GastoRepository _repo;
   final DashboardService _service;
+  final NotificacaoService _notificacoes;
 
-  DashboardViewModel(this._repo, this._service);
+  DashboardViewModel(this._repo, this._service, this._notificacoes);
 
   bool _loading = false;
   DashboardDTO _resumo = DashboardDTO.vazio;
@@ -30,6 +32,7 @@ class DashboardViewModel extends ChangeNotifier {
 
     final gastos = await _repo.findAll();
     _resumo = await _service.geraDashboardCompleto(gastos);
+    await _notificacoes.gerarSugestoes();
 
     _loading = false;
     notifyListeners();

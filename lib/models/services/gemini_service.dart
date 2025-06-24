@@ -8,6 +8,40 @@ class GeminiService {
   GeminiService({required this.apiKey, http.Client? client})
       : _client = client ?? http.Client();
 
+  Future<String> _generateText(String prompt) async {
+    final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
+            apiKey);
+
+    final body = jsonEncode({
+      'contents': [
+        {
+          'parts': [
+            {'text': prompt}
+          ]
+        }
+      ]
+    });
+
+    final response = await _client.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final String? answer =
+          data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      if (answer == null) {
+        throw Exception('Resposta invalida do Gemini');
+      }
+      return answer;
+    } else {
+      throw Exception('Erro na API Gemini: ${response.body}');
+    }
+  }
+
   Future<Map<String, dynamic>> parseExpense(String text) async {
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
@@ -56,5 +90,18 @@ $text''';
     } else {
       throw Exception('Erro na API Gemini: ${response.body}');
     }
+  }
+
+  Future<String> sugestaoParaMeta(
+      String descricao, double gastoAtual, double limite) async {
+    final prompt =
+        'Crie uma mensagem motivadora, em português, para um usuário que já gastou R\$ ${gastoAtual.toStringAsFixed(2)} de R\$ ${limite.toStringAsFixed(2)} na meta "$descricao" deste mês. Dê dicas curtas de como economizar.';
+    return _generateText(prompt);
+  }
+
+  Future<String> parabensPorMeta(String descricao) async {
+    final prompt =
+        'O usuário cumpriu a meta "$descricao" neste mês. Escreva uma mensagem breve parabenizando e incentivando a continuar economizando, em português.';
+    return _generateText(prompt);
   }
 }

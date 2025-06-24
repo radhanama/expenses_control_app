@@ -22,7 +22,7 @@ Future<Database> openAppDatabase() async {
   // ───── Open and migrate ─────
   return openDatabase(
     path,
-    version: 1,
+    version: 2,
     onCreate: _onCreate,
     onOpen: (db) async {
       await _seedData(db);
@@ -102,14 +102,37 @@ Future<void> _onCreate(Database db, int version) async {
     );
   ''');
 
+  await db.execute('''
+    CREATE TABLE metas (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      descricao     TEXT NOT NULL,
+      valor_limite  REAL NOT NULL,
+      mes_ano       TEXT NOT NULL,
+      categoria_id  INTEGER,
+      usuario_id    INTEGER NOT NULL,
+      FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    );
+  ''');
+
   await _seedData(db);
 }
 
 /// Handle schema upgrades here (bump [version] ↑ then add cases).
 Future<void> _onUpgrade(Database db, int oldV, int newV) async {
   if (oldV < 2) {
-    // Example:
-    // await db.execute('ALTER TABLE gastos ADD COLUMN observacao TEXT;');
+    await db.execute('''
+      CREATE TABLE metas (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao     TEXT NOT NULL,
+        valor_limite  REAL NOT NULL,
+        mes_ano       TEXT NOT NULL,
+        categoria_id  INTEGER,
+        usuario_id    INTEGER NOT NULL,
+        FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+      );
+    ''');
   }
 }
 
