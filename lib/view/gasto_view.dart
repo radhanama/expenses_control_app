@@ -136,12 +136,20 @@ class _GastoViewState extends State<GastoView> {
       await vm.salvarGasto(gasto);
       // Refresh related view models so other screens update immediately
       await context.read<ExtratoViewModel>().carregarGastos();
-      await context.read<DashboardViewModel>().carregarResumo();
+      final dashboard = context.read<DashboardViewModel>();
+      await dashboard.carregarResumo();
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Despesa cadastrada com sucesso!')),
-        );
-        Navigator.pop(context);
+        if (dashboard.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(dashboard.errorMessage!)),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Despesa cadastrada com sucesso!')),
+          );
+          Navigator.pop(context);
+        }
       }
     }
   }

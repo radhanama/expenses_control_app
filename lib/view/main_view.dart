@@ -5,6 +5,8 @@ import 'package:expenses_control_app/view/gasto_view.dart';
 import 'package:expenses_control_app/view/meta_view.dart';
 import 'package:flutter/material.dart';
 import 'package:expenses_control_app/view/extrato_view.dart';
+import 'package:provider/provider.dart';
+import '../view_model/extrato_view_model.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -30,11 +32,14 @@ Widget build(BuildContext context) {
      ),
      bottomNavigationBar: BottomNavigationBar(
        currentIndex: _selectedIndex,
-       onTap: (index) {
-         setState(() {
-           _selectedIndex = index;
-         });
-       },
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+        if (index == 0) {
+          context.read<ExtratoViewModel>().carregarGastos();
+        }
+      },
        items: [
          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Extrato'),
          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
