@@ -86,14 +86,15 @@ class _ExtratoViewState extends State<ExtratoView> {
   Widget _buildMonthPicker(BuildContext context) {
     return InkWell(
       onTap: () async {
-        final picked = await showMonthPicker(
+        final picked = await showDatePicker(
           context: context,
           initialDate: _selectedMonth,
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
+          locale: const Locale('pt', 'BR'),
         );
         if (picked != null) {
-          setState(() => _selectedMonth = picked);
+          setState(() => _selectedMonth = DateTime(picked.year, picked.month));
         }
       },
       child: Padding(
