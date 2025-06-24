@@ -15,7 +15,7 @@ class _MetaViewState extends State<MetaView> {
   void _showAddMetaDialog(BuildContext context) {
     final descCtrl = TextEditingController();
     final valorCtrl = TextEditingController();
-    DateTime mesAno = DateTime(DateTime.now().year, DateTime.now().month);
+    DateTime mesAno = DateTime.now();
     int? categoriaId;
 
     showDialog(
@@ -49,9 +49,9 @@ class _MetaViewState extends State<MetaView> {
                           initialDate: mesAno,
                           firstDate: DateTime(DateTime.now().year - 1),
                           lastDate: DateTime(DateTime.now().year + 1),
-                          helpText: 'Selecione o mês',
-                          fieldLabelText: 'Mês',
-                          fieldHintText: 'Mês/ano',
+                          helpText: 'Selecione o dia limite',
+                          fieldLabelText: 'Data',
+                          fieldHintText: 'dd/MM/yyyy',
                         );
                         if (picked != null) {
                           setState(() => mesAno = picked);
@@ -61,7 +61,7 @@ class _MetaViewState extends State<MetaView> {
                         children: [
                           const Icon(Icons.calendar_today),
                           const SizedBox(width: 8),
-                          Text(DateFormat('MM/yyyy').format(mesAno)),
+                          Text(DateFormat('dd/MM/yyyy').format(mesAno)),
                         ],
                       ),
                     ),
@@ -94,18 +94,34 @@ class _MetaViewState extends State<MetaView> {
             ),
             TextButton(
               onPressed: () async {
+                final descricao = descCtrl.text.trim();
+                final valorText = valorCtrl.text.replaceAll(',', '.');
+                final valor = double.tryParse(valorText);
+                if (descricao.isEmpty || valor == null) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(
+                        content: Text('Descrição e valor são obrigatórios')),
+                  );
+                  return;
+                }
+
                 final usuarioId =
                     context.read<UsuarioViewModel>().usuarioLogado?.id ?? 1;
+
                 await context.read<MetaViewModel>().adicionarMeta(
-                      Meta(
-                        descricao: descCtrl.text,
-                        valorLimite: double.tryParse(valorCtrl.text) ?? 0,
-                        mesAno: mesAno,
-                        categoriaId: categoriaId,
-                        usuarioId: usuarioId,
-                      ),
-                    );
+                  Meta(
+                    descricao: descricao,
+                    valorLimite: valor,
+                    mesAno: mesAno,
+                    categoriaId: categoriaId,
+                    usuarioId: usuarioId,
+                  ),
+                );
+
                 if (mounted) Navigator.of(ctx).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Meta salva com sucesso')),
+                );
               },
               child: const Text('Salvar'),
             ),
@@ -138,7 +154,7 @@ class _MetaViewState extends State<MetaView> {
           itemCount: vm.metas.length,
           itemBuilder: (context, index) {
             final meta = vm.metas[index];
-            final mes = DateFormat('MM/yyyy').format(meta.mesAno);
+            final mes = DateFormat('dd/MM/yyyy').format(meta.mesAno);
             return Card(
               margin: const EdgeInsets.only(bottom: 8.0),
               child: ListTile(
