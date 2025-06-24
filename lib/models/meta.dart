@@ -21,14 +21,26 @@ class Meta with EntityMapper {
   @override
   String get tableName => 'metas';
 
-  factory Meta.fromMap(Map<String, dynamic> map) => Meta(
-        id: map['id'] as int?,
-        descricao: map['descricao'] as String? ?? '',
-        valorLimite: (map['valor_limite'] as num).toDouble(),
-        mesAno: DateTime.parse(map['mes_ano'] as String),
-        usuarioId: map['usuario_id'] as int,
-        categoriaId: map['categoria_id'] as int?,
+  factory Meta.fromMap(Map<String, dynamic> map) {
+    if (map.isEmpty) {
+      return Meta(
+        descricao: '',
+        valorLimite: 0.0,
+        mesAno: DateTime.now(),
+        usuarioId: 0,
       );
+    }
+    return Meta(
+      id: map['id'] as int?,
+      descricao: map['descricao'] as String? ?? '',
+      valorLimite: (map['valor_limite'] as num?)?.toDouble() ?? 0.0,
+      mesAno: map['mes_ano'] != null
+          ? DateTime.parse(map['mes_ano'] as String)
+          : DateTime.now(),
+      usuarioId: (map['usuario_id'] as int?) ?? 0,
+      categoriaId: map['categoria_id'] as int?,
+    );
+  }
 
   @override
   Map<String, dynamic> toMap() => {

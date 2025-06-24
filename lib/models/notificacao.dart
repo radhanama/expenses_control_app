@@ -21,16 +21,27 @@ class Notificacao with EntityMapper {
   @override
   String get tableName => 'notificacoes';
 
-  factory Notificacao.fromMap(Map<String, dynamic> map) => Notificacao(
-        id: map['id'] as int?,
-        tipo: NotificationTipo.values.firstWhere(
-          (e) => e.name == map['tipo'],
-          orElse: () => NotificationTipo.LEMBRETE,
-        ),
-        mensagem: map['mensagem'] as String? ?? '',
-        data: DateTime.parse(map['data'] as String),
-        lida: (map['lida'] as int?) == 1,
+  factory Notificacao.fromMap(Map<String, dynamic> map) {
+    if (map.isEmpty) {
+      return Notificacao(
+        tipo: NotificationTipo.LEMBRETE,
+        mensagem: '',
+        data: DateTime.now(),
       );
+    }
+    return Notificacao(
+      id: map['id'] as int?,
+      tipo: NotificationTipo.values.firstWhere(
+        (e) => e.name == map['tipo'],
+        orElse: () => NotificationTipo.LEMBRETE,
+      ),
+      mensagem: map['mensagem'] as String? ?? '',
+      data: map['data'] != null
+          ? DateTime.parse(map['data'] as String)
+          : DateTime.now(),
+      lida: (map['lida'] as int?) == 1,
+    );
+  }
 
   @override
   Map<String, dynamic> toMap() => {
