@@ -42,19 +42,25 @@ class GeminiService {
     }
   }
 
-  Future<Map<String, dynamic>> parseExpense(String text) async {
+  Future<Map<String, dynamic>> parseExpense(String text,
+      {List<String> categorias = const []}) async {
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
             apiKey);
+
+    final categoriasTexto = categorias.isNotEmpty
+        ? '\nClassifique cada item na melhor categoria dentre: ${categorias.join(', ')}.'
+        : '';
 
     final prompt =
         '''Converta a seguinte descricao de compra em JSON no formato:
 {
   "estabelecimento": {"nome": "", "endereco_completo": ""},
   "informacao_geral": {"data_hora_emissao": "dd/MM/yyyy HH:mm:ss"},
-  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero}],
+  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero, "categoria": ""}],
   "compra": {"valor_a_pagar": numero}
 }
+$categoriasTexto
 Retorne apenas o JSON sem explicacoes.
 $text''';
 
