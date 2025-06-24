@@ -37,4 +37,5 @@ Comprei 5 pães de queijo no Zona Sul do Rio.
 ```
 
 O Gemini retornará um JSON estruturado e o formulário será preenchido
-automaticamente para revisão.
+automaticamente para revisão. A partir desta versão o modelo também
+classifica cada item na melhor categoria existente.

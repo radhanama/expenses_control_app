@@ -81,6 +81,7 @@ void main() async {
             webScrapingService: ctx.read<WebScrapingService>(),
             geminiService: ctx.read<GeminiService>(),
             repo: ctx.read<GastoRepository>(),
+            categoriaRepo: ctx.read<CategoriaRepository>(),
           ),
         ),
         ChangeNotifierProvider(

@@ -1,4 +1,5 @@
 import 'package:expenses_control/models/data/gasto_repository.dart';
+import 'package:expenses_control/models/data/categoria_repository.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
 import 'package:expenses_control/models/gasto.dart';
@@ -8,14 +9,17 @@ class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
   final GeminiService _geminiService;
   final GastoRepository _repo;
+  final CategoriaRepository _categoriaRepo;
 
   GastoViewModel({
     required WebScrapingService webScrapingService,
     required GeminiService geminiService,
     required GastoRepository repo,
+    required CategoriaRepository categoriaRepo,
   })  : _webScrapingService = webScrapingService,
         _geminiService = geminiService,
-        _repo = repo;
+        _repo = repo,
+        _categoriaRepo = categoriaRepo;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -37,7 +41,10 @@ class GastoViewModel extends ChangeNotifier {
     _scrapedData = null;
     notifyListeners();
     try {
-      _scrapedData = await _geminiService.parseExpense(texto);
+      final cats = await _categoriaRepo.findAll();
+      final nomesCategorias = cats.map((c) => c.titulo).toList();
+      _scrapedData =
+          await _geminiService.parseExpense(texto, categorias: nomesCategorias);
       _isLoading = false;
       notifyListeners();
       return true;
