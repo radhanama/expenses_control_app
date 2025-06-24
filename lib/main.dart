@@ -75,7 +75,11 @@ void main() async {
             gemini: ctx.read<GeminiService>(),
           ),
         ),
-        Provider(create: (_) => WebScrapingService()),
+        Provider(
+          create: (ctx) => WebScrapingService(
+            geminiService: ctx.read<GeminiService>(),
+          ),
+        ),
         ChangeNotifierProvider(
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
