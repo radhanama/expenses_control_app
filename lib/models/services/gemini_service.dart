@@ -64,7 +64,7 @@ class GeminiService {
   "compra": {"valor_a_pagar": numero}
 }
 $categoriasTexto
-Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada. Não mencione a data na resposta.
+Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada.
 Retorne apenas o JSON sem explicacoes.
 $text''';
 
