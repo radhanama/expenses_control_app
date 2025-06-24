@@ -1,5 +1,5 @@
 import 'package:expenses_control/models/data/gasto_repository.dart';
-import 'package:expenses_control/models/data/categoria_repository.dart';
+import 'package:expenses_control_app/models/data/categoria_repository.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
 import 'package:expenses_control/models/gasto.dart';
