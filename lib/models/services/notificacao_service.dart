@@ -27,12 +27,15 @@ class NotificacaoService {
         _gemini = gemini;
 
   Future<void> gerarSugestoes() async {
-    final gastos = await _gastoRepo.findAll();
-    if (gastos.isEmpty) return;
+    try {
+      final gastos = await _gastoRepo.findAll();
+      if (gastos.isEmpty) return;
 
-    final resumo = await _dashboard.geraDashboardCompleto(gastos);
-    final metas = await _metaRepo.findAll();
-    final agora = DateTime.now();
+      final int usuarioIdGasto = gastos.first.usuarioId;
+
+      final resumo = await _dashboard.geraDashboardCompleto(gastos);
+      final metas = await _metaRepo.findAll();
+      final agora = DateTime.now();
 
     for (final Meta m in metas) {
       final totalMeta = _totalGastoParaMeta(gastos, m);
@@ -46,6 +49,7 @@ class NotificacaoService {
             tipo: NotificationTipo.ALERTA_GASTO,
             mensagem: mensagem,
             data: DateTime.now(),
+            usuarioId: m.usuarioId,
           ));
         }
       } else if (agora.isAfter(ultimoDia) && totalMeta <= m.valorLimite) {
@@ -54,6 +58,7 @@ class NotificacaoService {
           tipo: NotificationTipo.LEMBRETE,
           mensagem: mensagem,
           data: DateTime.now(),
+          usuarioId: m.usuarioId,
         ));
       }
     }
@@ -66,7 +71,12 @@ class NotificacaoService {
         tipo: NotificationTipo.LEMBRETE,
         mensagem: mensagem,
         data: DateTime.now(),
+        usuarioId: usuarioIdGasto,
       ));
+    }
+    } catch (e) {
+      // Rethrow with context so ViewModels can display meaningful errors
+      throw Exception('Falha ao gerar notificações: $e');
     }
   }
 

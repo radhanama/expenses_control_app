@@ -98,6 +98,56 @@ $text''';
     }
   }
 
+  /// Faz o parsing dos dados de uma NFC-e a partir de seu HTML bruto
+  Future<Map<String, dynamic>> parseExpenseFromHtml(String html) async {
+    final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
+            apiKey);
+
+    final prompt =
+        '''Extraia as informações da nota fiscal eletrônica abaixo e retorne apenas o JSON no formato:
+{
+  "estabelecimento": {"nome": "", "endereco_completo": ""},
+  "informacao_geral": {"data_hora_emissao": "dd/MM/yyyy HH:mm:ss"},
+  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero}],
+  "compra": {"valor_a_pagar": numero}
+}
+HTML:
+$html''';
+
+    final body = jsonEncode({
+      'contents': [
+        {
+          'parts': [
+            {'text': prompt}
+          ]
+        }
+      ]
+    });
+
+    final response = await _client.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final String? answer =
+          data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      if (answer == null) {
+        throw Exception('Resposta invalida do Gemini');
+      }
+
+      final match = RegExp(r'\{[\s\S]*\}').firstMatch(answer);
+      final jsonString = match != null ? match.group(0) : answer;
+
+      return json.decode(jsonString!);
+    } else {
+      throw Exception('Erro na API Gemini: ${response.body}');
+    }
+  }
+
   Future<String> sugestaoParaMeta(
       String descricao, double gastoAtual, double limite) async {
     final prompt =
