@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/categoria_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
@@ -83,13 +84,26 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildMonthPicker(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
-          Icon(Icons.arrow_drop_down),
-        ],
+    return InkWell(
+      onTap: () async {
+        final picked = await showMonthPicker(
+          context: context,
+          initialDate: _selectedMonth,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) {
+          setState(() => _selectedMonth = picked);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
       ),
     );
   }
