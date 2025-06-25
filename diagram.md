@@ -11,6 +11,9 @@ class ExtratoView
 class MetaView
 class AdicionarGastoView
 class GeminiTextView
+class ChangeNotifier {
+    <<framework>>
+}
 
 class UsuarioViewModel {
     + carregarUsuarios(): void
@@ -45,6 +48,12 @@ ExtratoView     <.. ExtratoViewModel
 MetaView        <.. MetaViewModel
 AdicionarGastoView <.. GastoViewModel
 GeminiTextView <.. GastoViewModel
+UsuarioViewModel ..|> ChangeNotifier
+GastoViewModel ..|> ChangeNotifier
+DashboardViewModel ..|> ChangeNotifier
+CategoriaViewModel ..|> ChangeNotifier
+ExtratoViewModel ..|> ChangeNotifier
+MetaViewModel ..|> ChangeNotifier
 
 
 %% ================== REPOSITORIES ==================
@@ -253,4 +262,5 @@ Gasto --|> BaseUserEntity
 Produto --|> BaseUserEntity
 NotaFiscal --|> BaseUserEntity
 Categoria --|> BaseUserEntity
+BaseUserEntity ..|> ChangeNotifier
 ```
