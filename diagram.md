@@ -3,227 +3,129 @@ classDiagram
     direction TB
 
 %% ===================== UI =====================
-class UsuarioView
+class MyApp
+class MainView
+class DashboardView
+class AdicionarGastoView
+class ExtratoView
+class CategoriaView
+class MetaView
+class GeminiTextView
 class GastoView
-class EstatisticaView
-class LembreteView
+class UsuarioView
 
-class UsuarioViewModel {
-    + carregarUsuarios(): void
-    + login(email, senha): Usuario
-    + logout(): void
-}
-class GastoViewModel {
-    + adicionarGastoManual(g: Gasto): void
-    + adicionarGastoCode(g: Gasto): void
-    + editarGasto(g: Gasto): void
-    + removerGasto(g: Gasto): void
-    + listarGastos(): List~Gasto~
-}
-class EstatisticaViewModel {
-    + verEstatisticas(): EstatisticaDTO
-}
-class LembreteViewModel {
-    + agendarLembrete(data: Date, msg: String): void
-}
+class DashboardViewModel
+class GastoViewModel
+class CategoriaViewModel
+class MetaViewModel
+class ExtratoViewModel
+class UsuarioViewModel
+class ChangeNotifier
 
-UsuarioView     <.. UsuarioViewModel
-GastoView       <.. GastoViewModel
-EstatisticaView <.. EstatisticaViewModel
-LembreteView    <.. LembreteViewModel
-
+MainView <.. DashboardViewModel
+DashboardView <.. DashboardViewModel
+AdicionarGastoView <.. GastoViewModel
+GeminiTextView <.. GastoViewModel
+GastoView <.. GastoViewModel
+ExtratoView <.. ExtratoViewModel
+CategoriaView <.. CategoriaViewModel
+MetaView <.. MetaViewModel
+UsuarioView <.. UsuarioViewModel
+MyApp --> MainView
+DashboardViewModel --|> ChangeNotifier
+GastoViewModel --|> ChangeNotifier
+CategoriaViewModel --|> ChangeNotifier
+MetaViewModel --|> ChangeNotifier
+ExtratoViewModel --|> ChangeNotifier
+UsuarioViewModel --|> ChangeNotifier
 
 %% ================== REPOSITORIES ==================
-class BaseRepository~T~ {
-    <<hotspot>>
-    + buscarPorId(id): T
-    + listarTodos(): List~T~
-    + salvar(obj: T): void
-    + atualizar(obj: T): void
-    + deletar(id): void
-}
+class BaseRepository~T~
+class UsuarioRepository
+class GastoRepository
+class ProdutoRepository
+class NotaFiscalRepository
+class CategoriaRepository
+class MetaRepository
+class NotificacaoRepository
 
-class UsuarioRepository {
-    
-}
-class GastoRepository {
-    
-}
-class ProdutoRepository {
-    + buscarPorNome(nome): Produto
-}
-class NotaFiscalRepository {
-    
-}
-class CategoriaRepository {
-    
-}
-class NotificacaoRepository {
-    
-}
-
-UsuarioRepository    --|> BaseRepository~Usuario~
-GastoRepository      --|> BaseRepository~Gasto~
-ProdutoRepository    --|> BaseRepository~Produto~
+UsuarioRepository --|> BaseRepository~Usuario~
+GastoRepository --|> BaseRepository~Gasto~
+ProdutoRepository --|> BaseRepository~Produto~
 NotaFiscalRepository --|> BaseRepository~NotaFiscal~
-CategoriaRepository  --|> BaseRepository~Categoria~
-NotificacaoRepository--|> BaseRepository~Notificacao~
-
+CategoriaRepository --|> BaseRepository~Categoria~
+MetaRepository --|> BaseRepository~Meta~
+NotificacaoRepository --|> BaseRepository~Notificacao~
 
 %% =================== SERVICES ====================
-class AutenticacaoService {
-    <<hotspot>>
-    + login(email, senha): Usuario
-    + registrar(u: Usuario): Usuario
-    + logout(): void
-}
+class AuthenticationService
+class DashboardService
+class NotificacaoService
+class GeminiService
+class WebScrapingService
 
-class NotificationService {
-    <<hotspot>>
-    + agendarLembrete(data: Date, msg: String): void
-    + enviarAlerta(msg: String): void
-    + enviarAlertaGasto(msg: String): void
-    + enviarNotificacao(n: Notificacao): void
-}
+class IEstrategiaDashboard <<interface>>
+class RelatorioComum
+class RelatorioAvancado
+class GastoInputStrategy <<interface>>
+class TextInputStrategy
+class QrCodeInputStrategy
 
-class IEstrategiaEstatistica {
-    <<interface>>
-    <<frozenspot>>
-    + gerarEstatistica(gastos: List~Gasto~): EstatisticaDTO
-}
-class RelatorioComum {
-    <<frozenspot>>
-    + gerarEstatistica(gastos): EstatisticaDTO
-}
-class AnaliseIA {
-    + gerarEstatistica(gastos): EstatisticaDTO
-}
-class EstatisticaAvancada {
-    + gerarEstatistica(gastos): EstatisticaDTO
-}
-class EstatisticaService {
-    + gerarResumo(inicio: Date, fim: Date): EstatisticaDTO
-    + gerarPorCategoria(cat: String): EstatisticaDTO
-    + detectarPadroes(): List~Padrao~
-    + compararComPeriodoAnterior(per: Date): EstatisticaDiff
-    + setEstrategia(strat: IEstrategiaEstatistica): void
-}
+RelatorioComum ..|> IEstrategiaDashboard
+RelatorioAvancado ..|> IEstrategiaDashboard
+DashboardService --> IEstrategiaDashboard
+TextInputStrategy ..|> GastoInputStrategy
+QrCodeInputStrategy ..|> GastoInputStrategy
 
-RelatorioComum      ..|> IEstrategiaEstatistica
-AnaliseIA           ..|> IEstrategiaEstatistica
-EstatisticaAvancada ..|> IEstrategiaEstatistica
-EstatisticaService  --> IEstrategiaEstatistica
-
-
-%% ============== JOB FACTORY & JOBS ==============
-class IGastoMonitorJob {
-    <<interface>>
-    + executar(): void
-}
-
-class JobFactory {
-    <<hotspot>>
-    + criarJobs(): List~IGastoMonitorJob~
-}
-
-class ExcessoCategoriaJob {
-    <<scheduled>>
-    + executar(): void
-}
-class LimiteMensalJob {
-    <<scheduled>>
-    + executar(): void
-}
-
-JobFactory --> IGastoMonitorJob : cria
-ExcessoCategoriaJob ..|> IGastoMonitorJob
-LimiteMensalJob     ..|> IGastoMonitorJob
-
-IGastoMonitorJob ..> GastoRepository
-IGastoMonitorJob ..> EstatisticaService
-IGastoMonitorJob ..> NotificationService
-
-
-%% ============= VM DEPENDENCIES ==============
+%% ============= VIEW MODEL DEPENDENCIES =============
+DashboardViewModel ..> GastoRepository
+DashboardViewModel ..> DashboardService
+DashboardViewModel ..> NotificacaoService
+GastoViewModel ..> WebScrapingService
+GastoViewModel ..> GeminiService
+GastoViewModel ..> GastoRepository
+GastoViewModel ..> CategoriaRepository
+ExtratoViewModel ..> GastoRepository
+CategoriaViewModel ..> CategoriaRepository
+MetaViewModel ..> MetaRepository
 UsuarioViewModel ..> UsuarioRepository
-UsuarioViewModel ..> AutenticacaoService
-
-GastoViewModel   ..> GastoRepository
-GastoViewModel   ..> ProdutoRepository
-GastoViewModel   ..> NotaFiscalRepository
-GastoViewModel   ..> CategoriaRepository
-
-EstatisticaViewModel ..> EstatisticaService
-EstatisticaViewModel ..> GastoRepository
-
-LembreteViewModel ..> NotificationService
-NotificationService ..> Usuario : entrega a
-
+UsuarioViewModel ..> AuthenticationService
+NotificacaoService ..> GastoRepository
+NotificacaoService ..> MetaRepository
+NotificacaoService ..> NotificacaoRepository
+NotificacaoService ..> DashboardService
+NotificacaoService ..> GeminiService
 
 %% ================= ENTIDADES =================
-class Usuario {
-    <<frozenspot>>
-    - id: String
-    - nome: String
-    - email: String
-    - senha: String
-    + adicionarGasto(g: Gasto): void
-    + listarGastos(): List~Gasto~
-    + verEstatisticas(): EstatisticaDTO
-}
-class Gasto {
-    <<frozenspot>>
-    - id: String
-    - total: Double
-    - data: Date
-    - categoria: String
-    - local: String
-    + adicionarProduto(p: Produto): void
-    + calcularTotal(): Double
-}
-class Produto {
-    <<frozenspot>>
-    - nome: String
-    - preco: Double
-    - quantidade: int
-    + calcularSubtotal(): Double
-    + reescreverInformacoes(nome, preco, quantidade): void
-}
-class NotaFiscal {
-    <<frozenspot>>
-    - imagem: File
-    - textoExtraido: String
-    + processarOCR(): void
-    + extrairProdutos(): List~Produto~
-}
-class Categoria {
-    <<frozenspot>>
-    - titulo: String
-    - descricao: String
-    + adicionarSubcategoria(c: Categoria): void
-    + removerSubcategoria(c: Categoria): void
-    + getDescricaoCompleta(): String
-}
-class Notificacao {
-    <<frozenspot>>
-    - id: String
-    - tipo: NotificationTipo
-    - mensagem: String
-    - data: Date
-    - lida: boolean
-    + marcarComoLida(): void
-}
+class Usuario
+class Gasto
+class Produto
+class NotaFiscal
+class Categoria
+class Meta
+class Notificacao
+class NotificationTipo <<enumeration>>
+class DashboardDTO
 
-class NotificationTipo {
-    «enumeration»
-    LEMBRETE
-    ALERTA_GASTO
-}
-
-Usuario "1" --> "*"  Gasto
-Gasto   "1" --> "*"  Produto
-Gasto   "1" --> "0..1" NotaFiscal
-Produto      -->      Categoria
+Usuario "1" --> "*" Gasto
+Gasto "1" --> "*" Produto
+Gasto "1" --> "0..1" NotaFiscal
 Categoria "1" --> "*" Categoria : subcategorias
 Usuario "1" --> "*" Notificacao
+```
+
+## Camadas
+- **View**: widgets de interface, como `DashboardView` e `MetaView`.
+- **ViewModel**: classes que expõem estado para as views seguindo MVVM.
+- **Services**: regras de negócio, podendo usar estratégias.
+- **Repositories**: acesso ao banco de dados (padrão Repository).
+- **Models/Entidades**: objetos persistidos e lógica de domínio.
+- **Strategies**: algoritmos intercambiáveis utilizados por serviços.
+
+## Padrões de Projeto
+- **Repository**: `BaseRepository` e subclasses isolam a persistência.
+- **Strategy**: `IEstrategiaDashboard`, `GastoInputStrategy` e suas implementações.
+- **Composite**: `CategoriaComponent` e `Categoria` para hierarquias de categorias.
+- **MVVM**: Views consomem `ViewModel` com `ChangeNotifier`.
+- **Observer**: mudanças nos modelos disparam `notifyListeners` via `ChangeNotifier`.
 ```
