@@ -5,8 +5,15 @@ classDiagram
 %% ===================== UI =====================
 class UsuarioView
 class GastoView
-class EstatisticaView
-class LembreteView
+class DashboardView
+class CategoriaView
+class ExtratoView
+class MetaView
+class AdicionarGastoView
+class GeminiTextView
+class ChangeNotifier {
+    <<framework>>
+}
 
 class UsuarioViewModel {
     + carregarUsuarios(): void
@@ -20,21 +27,38 @@ class GastoViewModel {
     + removerGasto(g: Gasto): void
     + listarGastos(): List~Gasto~
 }
-class EstatisticaViewModel {
-    + verEstatisticas(): EstatisticaDTO
+class DashboardViewModel {
+    + carregarResumo(): void
 }
-class LembreteViewModel {
-    + agendarLembrete(data: Date, msg: String): void
+class CategoriaViewModel {
+    + carregarCategorias(): void
+}
+class ExtratoViewModel {
+    + carregarGastos(): void
+}
+class MetaViewModel {
+    + carregarMetas(): void
 }
 
 UsuarioView     <.. UsuarioViewModel
 GastoView       <.. GastoViewModel
-EstatisticaView <.. EstatisticaViewModel
-LembreteView    <.. LembreteViewModel
+DashboardView   <.. DashboardViewModel
+CategoriaView   <.. CategoriaViewModel
+ExtratoView     <.. ExtratoViewModel
+MetaView        <.. MetaViewModel
+AdicionarGastoView <.. GastoViewModel
+GeminiTextView <.. GastoViewModel
+UsuarioViewModel ..|> ChangeNotifier
+GastoViewModel ..|> ChangeNotifier
+DashboardViewModel ..|> ChangeNotifier
+CategoriaViewModel ..|> ChangeNotifier
+ExtratoViewModel ..|> ChangeNotifier
+MetaViewModel ..|> ChangeNotifier
 
 
 %% ================== REPOSITORIES ==================
 class BaseRepository~T~ {
+    <<framework>>
     <<hotspot>>
     + buscarPorId(id): T
     + listarTodos(): List~T~
@@ -44,10 +68,12 @@ class BaseRepository~T~ {
 }
 
 class UsuarioRepository {
-    
+    <<framework>>
+    <<frozenspot>>
 }
 class GastoRepository {
-    
+    <<framework>>
+    <<frozenspot>>
 }
 class ProdutoRepository {
     + buscarPorNome(nome): Produto
@@ -59,7 +85,10 @@ class CategoriaRepository {
     
 }
 class NotificacaoRepository {
-    
+
+}
+class MetaRepository {
+
 }
 
 UsuarioRepository    --|> BaseRepository~Usuario~
@@ -68,100 +97,90 @@ ProdutoRepository    --|> BaseRepository~Produto~
 NotaFiscalRepository --|> BaseRepository~NotaFiscal~
 CategoriaRepository  --|> BaseRepository~Categoria~
 NotificacaoRepository--|> BaseRepository~Notificacao~
+MetaRepository       --|> BaseRepository~Meta~
 
 
 %% =================== SERVICES ====================
-class AutenticacaoService {
+class AuthenticationService {
     <<hotspot>>
     + login(email, senha): Usuario
     + registrar(u: Usuario): Usuario
     + logout(): void
 }
 
-class NotificationService {
-    <<hotspot>>
-    + agendarLembrete(data: Date, msg: String): void
-    + enviarAlerta(msg: String): void
-    + enviarAlertaGasto(msg: String): void
-    + enviarNotificacao(n: Notificacao): void
+class NotificacaoService {
+    + gerarSugestoes(): void
 }
 
-class IEstrategiaEstatistica {
+class GeminiService {
+    + parseExpense(texto): Map
+}
+
+class WebScrapingService {
+    + scrapeNfceFromUrl(url): Map
+}
+
+class DashboardService {
+    + geraDashboardCompleto(gastos: List~Gasto~): DashboardDTO
+}
+
+class IEstrategiaDashboard {
+    <<framework>>
     <<interface>>
-    <<frozenspot>>
-    + gerarEstatistica(gastos: List~Gasto~): EstatisticaDTO
+    <<hotspot>>
+    + geraRelatorio(gastos: List~Gasto~): DashboardDTO
 }
 class RelatorioComum {
+    <<framework>>
     <<frozenspot>>
-    + gerarEstatistica(gastos): EstatisticaDTO
+    + geraRelatorio(gastos): DashboardDTO
 }
-class AnaliseIA {
-    + gerarEstatistica(gastos): EstatisticaDTO
-}
-class EstatisticaAvancada {
-    + gerarEstatistica(gastos): EstatisticaDTO
-}
-class EstatisticaService {
-    + gerarResumo(inicio: Date, fim: Date): EstatisticaDTO
-    + gerarPorCategoria(cat: String): EstatisticaDTO
-    + detectarPadroes(): List~Padrao~
-    + compararComPeriodoAnterior(per: Date): EstatisticaDiff
-    + setEstrategia(strat: IEstrategiaEstatistica): void
+class RelatorioAvancado {
+    + geraRelatorio(gastos): DashboardDTO
 }
 
-RelatorioComum      ..|> IEstrategiaEstatistica
-AnaliseIA           ..|> IEstrategiaEstatistica
-EstatisticaAvancada ..|> IEstrategiaEstatistica
-EstatisticaService  --> IEstrategiaEstatistica
+DashboardService  --> IEstrategiaDashboard
+RelatorioComum    ..|> IEstrategiaDashboard
+RelatorioAvancado ..|> IEstrategiaDashboard
 
 
-%% ============== JOB FACTORY & JOBS ==============
-class IGastoMonitorJob {
-    <<interface>>
-    + executar(): void
-}
-
-class JobFactory {
-    <<hotspot>>
-    + criarJobs(): List~IGastoMonitorJob~
-}
-
-class ExcessoCategoriaJob {
-    <<scheduled>>
-    + executar(): void
-}
-class LimiteMensalJob {
-    <<scheduled>>
-    + executar(): void
-}
-
-JobFactory --> IGastoMonitorJob : cria
-ExcessoCategoriaJob ..|> IGastoMonitorJob
-LimiteMensalJob     ..|> IGastoMonitorJob
-
-IGastoMonitorJob ..> GastoRepository
-IGastoMonitorJob ..> EstatisticaService
-IGastoMonitorJob ..> NotificationService
 
 
 %% ============= VM DEPENDENCIES ==============
 UsuarioViewModel ..> UsuarioRepository
-UsuarioViewModel ..> AutenticacaoService
+UsuarioViewModel ..> AuthenticationService
 
 GastoViewModel   ..> GastoRepository
 GastoViewModel   ..> ProdutoRepository
 GastoViewModel   ..> NotaFiscalRepository
 GastoViewModel   ..> CategoriaRepository
+GastoViewModel   ..> WebScrapingService
+GastoViewModel   ..> GeminiService
 
-EstatisticaViewModel ..> EstatisticaService
-EstatisticaViewModel ..> GastoRepository
+DashboardViewModel ..> DashboardService
+DashboardViewModel ..> GastoRepository
+DashboardViewModel ..> NotificacaoService
 
-LembreteViewModel ..> NotificationService
-NotificationService ..> Usuario : entrega a
+CategoriaViewModel ..> CategoriaRepository
+ExtratoViewModel ..> GastoRepository
+MetaViewModel ..> MetaRepository
 
+NotificacaoService ..> GastoRepository
+NotificacaoService ..> MetaRepository
+NotificacaoService ..> NotificacaoRepository
+NotificacaoService ..> DashboardService
+NotificacaoService ..> GeminiService
 
 %% ================= ENTIDADES =================
+class BaseUserEntity {
+    <<framework>>
+    <<hotspot>>
+    + id: String
+    + usuarioId: String
+}
+
 class Usuario {
+    <<framework>>
     <<frozenspot>>
     - id: String
     - nome: String
@@ -172,6 +191,7 @@ class Usuario {
     + verEstatisticas(): EstatisticaDTO
 }
 class Gasto {
+    <<framework>>
     <<frozenspot>>
     - id: String
     - total: Double
@@ -182,6 +202,7 @@ class Gasto {
     + calcularTotal(): Double
 }
 class Produto {
+    <<framework>>
     <<frozenspot>>
     - nome: String
     - preco: Double
@@ -190,6 +211,7 @@ class Produto {
     + reescreverInformacoes(nome, preco, quantidade): void
 }
 class NotaFiscal {
+    <<framework>>
     <<frozenspot>>
     - imagem: File
     - textoExtraido: String
@@ -197,6 +219,7 @@ class NotaFiscal {
     + extrairProdutos(): List~Produto~
 }
 class Categoria {
+    <<framework>>
     <<frozenspot>>
     - titulo: String
     - descricao: String
@@ -213,6 +236,14 @@ class Notificacao {
     - lida: boolean
     + marcarComoLida(): void
 }
+class Meta {
+    - id: String
+    - descricao: String
+    - valorLimite: Double
+    - mesAno: Date
+    - categoriaId: String
+    - usuarioId: String
+}
 
 class NotificationTipo {
     «enumeration»
@@ -226,4 +257,10 @@ Gasto   "1" --> "0..1" NotaFiscal
 Produto      -->      Categoria
 Categoria "1" --> "*" Categoria : subcategorias
 Usuario "1" --> "*" Notificacao
+Usuario "1" --> "*" Meta
+Gasto --|> BaseUserEntity
+Produto --|> BaseUserEntity
+NotaFiscal --|> BaseUserEntity
+Categoria --|> BaseUserEntity
+BaseUserEntity ..|> ChangeNotifier
 ```
