@@ -1,16 +1,22 @@
 // lib/models/categoria.dart
 import 'base/base_user_entity.dart';
+import 'categoria_component.dart';
 
-class Categoria extends BaseUserEntity {
+/// Implementação concreta do componente da árvore de categorias.
+class Categoria extends CategoriaComponent<Categoria> {
   // ────────────────── Campos ──────────────────
+  @override
   final String titulo;
+  @override
   final String descricao;
 
   /// FK para hierarquia (null se for a raiz)
+  @override
   final int? parentId;
 
   /// As subcategorias podem ser carregadas lazy a partir do BD,
   /// mas deixamos o campo aqui para operações em memória.
+  @override
   final List<Categoria> subcategorias;
 
   // ───────────────── Construtor ─────────────────
@@ -51,13 +57,16 @@ class Categoria extends BaseUserEntity {
       };
 
   // ───────────── Lógica de domínio ─────────────
-  Categoria adicionarSubcategoria(Categoria c) =>
+  @override
+  Categoria adicionarSubcategoria(covariant Categoria c) =>
       copyWith(subcategorias: [...subcategorias, c.copyWith(parentId: id)]);
 
-  Categoria removerSubcategoria(Categoria c) => copyWith(
+  @override
+  Categoria removerSubcategoria(covariant Categoria c) => copyWith(
       subcategorias: subcategorias.where((s) => s.id != c.id).toList());
 
   /// Ex.: "Financeiro > Despesas Fixas > Aluguel"
+  @override
   String getDescricaoCompleta({String separator = ' > '}) {
     if (parentId == null) return titulo;
     // Caso a cadeia superior não esteja em memória, você buscaria no BD.
