@@ -4,6 +4,9 @@ import 'package:expenses_control_app/models/services/web_scrapping_service.dart'
 import 'package:expenses_control_app/models/services/gemini_service.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'package:flutter/material.dart';
+import '../models/strategies/gasto_input_strategy.dart';
+import '../models/strategies/qr_code_input_strategy.dart';
+import '../models/strategies/text_input_strategy.dart';
 
 class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
@@ -35,16 +38,13 @@ class GastoViewModel extends ChangeNotifier {
 
   Future<List<Gasto>> listarGastos() => _repo.findAll();
 
-  Future<bool> processarTexto(String texto) async {
+  Future<bool> _processar(String entrada, GastoInputStrategy estrategia) async {
     _isLoading = true;
     _errorMessage = null;
     _scrapedData = null;
     notifyListeners();
     try {
-      final cats = await _categoriaRepo.findAll();
-      final nomesCategorias = cats.map((c) => c.titulo).toList();
-      _scrapedData =
-          await _geminiService.parseExpense(texto, categorias: nomesCategorias);
+      _scrapedData = await estrategia.process(entrada);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -56,8 +56,15 @@ class GastoViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> processarTexto(String texto) async {
+    final cats = await _categoriaRepo.findAll();
+    final nomesCategorias = cats.map((c) => c.titulo).toList();
+    final estrategia =
+        TextInputStrategy(geminiService: _geminiService, categorias: nomesCategorias);
+    return _processar(texto, estrategia);
+  }
+
   Future<bool> processarQRCode(String url) async {
-    // Validação básica da URL
     if (!url.startsWith(
         'https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode')) {
       _errorMessage = "QR Code inválido. A URL não é de uma nota fiscal do RJ.";
@@ -65,21 +72,8 @@ class GastoViewModel extends ChangeNotifier {
       return false;
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    _scrapedData = null;
-    notifyListeners();
-
-    try {
-      _scrapedData = await _webScrapingService.scrapeNfceFromUrl(url);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    final estrategia =
+        QrCodeInputStrategy(scrapingService: _webScrapingService);
+    return _processar(url, estrategia);
   }
 }
