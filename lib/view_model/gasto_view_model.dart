@@ -36,6 +36,16 @@ class GastoViewModel extends ChangeNotifier {
     return _repo.create(gasto);
   }
 
+  Future<void> atualizarGasto(Gasto gasto) async {
+    await _repo.update(gasto);
+    notifyListeners();
+  }
+
+  Future<void> deletarGasto(int id) async {
+    await _repo.delete(id);
+    notifyListeners();
+  }
+
   Future<List<Gasto>> listarGastos() => _repo.findAll();
 
   Future<bool> _processar(String entrada, GastoInputStrategy estrategia) async {
