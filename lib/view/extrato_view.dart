@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/categoria_view_model.dart';
-import 'package:expenses_control/models/gasto.dart';
+import '../models/gasto.dart';
+import 'gasto_detalhe_view.dart';
 
 class ExtratoView extends StatefulWidget {
   @override
@@ -130,68 +131,60 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildGastosTable(List<Gasto> gastos, Map<int?, String> catMap) {
+    if (gastos.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('Nenhum gasto encontrado'),
+      );
+    }
+
+    final rows = gastos
+        .map(
+          (g) => DataRow(
+            cells: [
+              DataCell(Text(DateFormat('yyyy-MM-dd').format(g.data))),
+              DataCell(Text(catMap[g.categoriaId] ?? '')),
+              DataCell(Text('R\$ ${g.total.toStringAsFixed(2)}')),
+              DataCell(Text(g.local)),
+            ],
+            onSelectChanged: (_) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => GastoDetalheView(gasto: g),
+                ),
+              );
+            },
+          ),
+        )
+        .toList();
+
     return Container(
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              blurRadius: 2,
-              color: Colors.grey.withOpacity(0.2),
-              offset: Offset(0, 1))
+            blurRadius: 2,
+            color: Colors.grey.withOpacity(0.2),
+            offset: const Offset(0, 1),
+          )
         ],
       ),
-      child: Table(
-        columnWidths: {
-          0: FlexColumnWidth(1.0),
-          1: FlexColumnWidth(2.0),
-          2: FlexColumnWidth(1.5),
-          3: FlexColumnWidth(0.8),
-          4: FlexColumnWidth(1.0),
-          5: FlexColumnWidth(1.0),
-          6: FlexColumnWidth(1.5),
-        },
-        border: TableBorder.all(color: Colors.grey.shade300),
-        children: [
-          TableRow(
-            decoration: BoxDecoration(color: Colors.grey.shade100),
-            children: [
-              _buildTableCell('Data', isHeader: true),
-              _buildTableCell('Descrição', isHeader: true),
-              _buildTableCell('Categoria', isHeader: true),
-              _buildTableCell('Qtd', isHeader: true),
-              _buildTableCell('Preço', isHeader: true),
-              _buildTableCell('Total', isHeader: true),
-              _buildTableCell('Local', isHeader: true),
-            ],
-          ),
-          ...gastos
-              .map((g) => TableRow(children: [
-                    _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
-                    _buildTableCell('-'),
-                    _buildTableCell(catMap[g.categoriaId] ?? ''),
-                    _buildTableCell('-'),
-                    _buildTableCell('-'),
-                    _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),
-                    _buildTableCell(g.local),
-                  ]))
-              .toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableCell(String text, {bool isHeader = false}) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
-          fontSize: isHeader ? 14 : 12,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text('Data')),
+            DataColumn(label: Text('Categoria')),
+            DataColumn(label: Text('Total')),
+            DataColumn(label: Text('Local')),
+          ],
+          rows: rows,
         ),
       ),
     );
   }
+
 }
