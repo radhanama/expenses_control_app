@@ -7,6 +7,7 @@ import '../view_model/categoria_view_model.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/dashboard_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
+import 'package:expenses_control/models/categoria.dart';
 
 class GastoView extends StatefulWidget {
   final Map<String, dynamic>? dadosIniciais;
@@ -18,6 +19,29 @@ class GastoView extends StatefulWidget {
 }
 
 class _GastoViewState extends State<GastoView> {
+  String _normalize(String text) {
+    const map = {
+      'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ç': 'c',
+      'Á': 'a', 'À': 'a', 'Â': 'a', 'Ã': 'a', 'Ä': 'a',
+      'É': 'e', 'È': 'e', 'Ê': 'e', 'Ë': 'e',
+      'Í': 'i', 'Ì': 'i', 'Î': 'i', 'Ï': 'i',
+      'Ó': 'o', 'Ò': 'o', 'Ô': 'o', 'Õ': 'o', 'Ö': 'o',
+      'Ú': 'u', 'Ù': 'u', 'Û': 'u', 'Ü': 'u',
+      'Ç': 'c'
+    };
+    return text.split('').map((c) => map[c] ?? c).join();
+  }
+
+  bool _matchCat(String a, String b) {
+    final na = _normalize(a.toLowerCase());
+    final nb = _normalize(b.toLowerCase());
+    return na == nb || na.contains(nb) || nb.contains(na);
+  }
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
   final TextEditingController _estabelecimentoController =
@@ -60,16 +84,39 @@ class _GastoViewState extends State<GastoView> {
 
     final List<dynamic> itens = dados['itens'] ?? [];
     if (itens.isNotEmpty) {
-      final categorias = context.read<CategoriaViewModel>().categorias;
-      final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
-      _produtos = itens
-          .map((item) => {
-                'descricao': item['nome'] ?? '',
-                'quantidade': item['qtd']?.toString() ?? '1',
-                'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-                'categoria': cat
-              })
-          .toList();
+      final categoriasVm = context.read<CategoriaViewModel>().categorias;
+      final defaultCat = categoriasVm.isNotEmpty ? categoriasVm.first.titulo : 'Outros';
+
+      _produtos = itens.map((item) {
+        final nomeCat = (item['categoria'] as String?)?.trim() ?? '';
+        String categoria = defaultCat;
+        if (nomeCat.isNotEmpty) {
+          final match = categoriasVm.firstWhere(
+            (c) => _matchCat(c.titulo, nomeCat),
+            orElse: () => categoriasVm.isNotEmpty
+                ? categoriasVm.first
+                : Categoria(titulo: defaultCat, descricao: '', usuarioId: 0),
+          );
+          categoria = match.titulo;
+        }
+
+        final precoValor = item['valor_unitario'];
+        String preco;
+        if (precoValor is num) {
+          preco = precoValor.toStringAsFixed(2);
+        } else if (precoValor != null) {
+          preco = precoValor.toString();
+        } else {
+          preco = '0.00';
+        }
+
+        return {
+          'descricao': item['nome'] ?? '',
+          'quantidade': item['qtd']?.toString() ?? '1',
+          'preco': preco,
+          'categoria': categoria,
+        };
+      }).toList();
     }
     _descControllers.clear();
     _qtdControllers.clear();

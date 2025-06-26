@@ -103,10 +103,15 @@ $text''';
   }
 
   /// Faz o parsing dos dados de uma NFC-e a partir de seu HTML bruto
-  Future<Map<String, dynamic>> parseExpenseFromHtml(String html) async {
+  Future<Map<String, dynamic>> parseExpenseFromHtml(String html,
+      {List<String> categorias = const []}) async {
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
             apiKey);
+
+    final categoriasTexto = categorias.isNotEmpty
+        ? '\nClassifique cada item na melhor categoria dentre: ${categorias.join(', ')}.'
+        : '';
 
     final hoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
@@ -115,9 +120,10 @@ $text''';
 {
   "estabelecimento": {"nome": "", "endereco_completo": ""},
   "informacao_geral": {"data_hora_emissao": "dd/MM/yyyy HH:mm:ss"},
-  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero}],
+  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero, "categoria": ""}],
   "compra": {"valor_a_pagar": numero}
 }
+$categoriasTexto
 Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada. Não mencione a data na resposta.
 HTML:
 $html''';
