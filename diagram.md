@@ -117,13 +117,6 @@ Categoria "1" --> "*" Categoria : subcategorias
 Usuario "1" --> "*" Notificacao
 ```
 
-## Camadas
-- **View**: widgets de interface, como `DashboardView` e `MetaView`.
-- **ViewModel**: classes que expõem estado para as views seguindo MVVM.
-- **Services**: regras de negócio, podendo usar estratégias.
-- **Repositories**: acesso ao banco de dados (padrão Repository).
-- **Models/Entidades**: objetos persistidos e lógica de domínio.
-- **Strategies**: algoritmos intercambiáveis utilizados por serviços.
 
 ## Padrões de Projeto
 - **Repository**: `BaseRepository` e subclasses isolam a persistência.
