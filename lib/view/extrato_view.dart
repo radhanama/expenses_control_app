@@ -143,14 +143,11 @@ class _ExtratoViewState extends State<ExtratoView> {
         ],
       ),
       child: Table(
-        columnWidths: {
+        columnWidths: const {
           0: FlexColumnWidth(1.0),
           1: FlexColumnWidth(2.0),
-          2: FlexColumnWidth(1.5),
-          3: FlexColumnWidth(0.8),
-          4: FlexColumnWidth(1.0),
-          5: FlexColumnWidth(1.0),
-          6: FlexColumnWidth(1.5),
+          2: FlexColumnWidth(2.0),
+          3: FlexColumnWidth(1.0),
         },
         border: TableBorder.all(color: Colors.grey.shade300),
         children: [
@@ -158,23 +155,17 @@ class _ExtratoViewState extends State<ExtratoView> {
             decoration: BoxDecoration(color: Colors.grey.shade100),
             children: [
               _buildTableCell('Data', isHeader: true),
-              _buildTableCell('Descrição', isHeader: true),
               _buildTableCell('Categoria', isHeader: true),
-              _buildTableCell('Qtd', isHeader: true),
-              _buildTableCell('Preço', isHeader: true),
-              _buildTableCell('Total', isHeader: true),
               _buildTableCell('Local', isHeader: true),
+              _buildTableCell('Total', isHeader: true),
             ],
           ),
           ...gastos
               .map((g) => TableRow(children: [
                     _buildTableCell(DateFormat('yyyy-MM-dd').format(g.data)),
-                    _buildTableCell('-'),
                     _buildTableCell(catMap[g.categoriaId] ?? ''),
-                    _buildTableCell('-'),
-                    _buildTableCell('-'),
+                    _buildTableCell(g.local.isEmpty ? '-' : g.local),
                     _buildTableCell('R\$ ${g.total.toStringAsFixed(2)}'),
-                    _buildTableCell(g.local),
                   ]))
               .toList(),
         ],
