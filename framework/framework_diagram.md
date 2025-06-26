@@ -25,7 +25,8 @@ class Usuario
 class Gasto
 class Produto
 class NotaFiscal
-class CategoriaComponent <<interface>>
+class CategoriaComponent
+<<interface>> CategoriaComponent
 class Categoria
 
 Gasto --|> BaseUserEntity
@@ -40,7 +41,8 @@ Gasto "1" --> "0..1" NotaFiscal
 Categoria "1" --> "*" Categoria : subcategorias
 
 %% ================= DASHBOARD =================
-class IEstrategiaDashboard <<interface>>
+class IEstrategiaDashboard
+<<interface>> IEstrategiaDashboard
 class RelatorioComum
 class DashboardDTO
 
