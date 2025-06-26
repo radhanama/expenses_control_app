@@ -64,10 +64,12 @@ class NotificacaoService
 class GeminiService
 class WebScrapingService
 
-class IEstrategiaDashboard <<interface>>
+class IEstrategiaDashboard
+<<interface>> IEstrategiaDashboard
 class RelatorioComum
 class RelatorioAvancado
-class GastoInputStrategy <<interface>>
+class GastoInputStrategy
+<<interface>> GastoInputStrategy
 class TextInputStrategy
 class QrCodeInputStrategy
 
@@ -104,7 +106,8 @@ class NotaFiscal
 class Categoria
 class Meta
 class Notificacao
-class NotificationTipo <<enumeration>>
+class NotificationTipo
+<<enumeration>> NotificationTipo
 class DashboardDTO
 
 Usuario "1" --> "*" Gasto
