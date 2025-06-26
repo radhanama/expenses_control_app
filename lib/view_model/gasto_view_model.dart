@@ -72,8 +72,10 @@ class GastoViewModel extends ChangeNotifier {
       return false;
     }
 
-    final estrategia =
-        QrCodeInputStrategy(scrapingService: _webScrapingService);
+    final cats = await _categoriaRepo.findAll();
+    final nomesCategorias = cats.map((c) => c.titulo).toList();
+    final estrategia = QrCodeInputStrategy(
+        scrapingService: _webScrapingService, categorias: nomesCategorias);
     return _processar(url, estrategia);
   }
 }

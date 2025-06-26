@@ -10,7 +10,8 @@ class WebScrapingService {
       : _gemini = geminiService;
 
   /// Busca o conteúdo HTML de uma URL da NFC-e e o analisa.
-  Future<Map<String, dynamic>> scrapeNfceFromUrl(String url) async {
+  Future<Map<String, dynamic>> scrapeNfceFromUrl(String url,
+      {List<String> categorias = const []}) async {
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -18,11 +19,13 @@ class WebScrapingService {
         try {
           final data = _parseNfceHtmlDart(response.body);
           if (data['itens'] == null || (data['itens'] as List).isEmpty) {
-            return await _gemini.parseExpenseFromHtml(response.body);
+            return await _gemini.parseExpenseFromHtml(response.body,
+                categorias: categorias);
           }
           return data;
         } catch (_) {
-          return await _gemini.parseExpenseFromHtml(response.body);
+          return await _gemini.parseExpenseFromHtml(response.body,
+              categorias: categorias);
         }
       } else {
         throw Exception('Falha ao carregar a página da nota fiscal. Status: ${response.statusCode}');

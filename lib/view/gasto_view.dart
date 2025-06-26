@@ -19,6 +19,29 @@ class GastoView extends StatefulWidget {
 }
 
 class _GastoViewState extends State<GastoView> {
+  String _normalize(String text) {
+    const map = {
+      'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ç': 'c',
+      'Á': 'a', 'À': 'a', 'Â': 'a', 'Ã': 'a', 'Ä': 'a',
+      'É': 'e', 'È': 'e', 'Ê': 'e', 'Ë': 'e',
+      'Í': 'i', 'Ì': 'i', 'Î': 'i', 'Ï': 'i',
+      'Ó': 'o', 'Ò': 'o', 'Ô': 'o', 'Õ': 'o', 'Ö': 'o',
+      'Ú': 'u', 'Ù': 'u', 'Û': 'u', 'Ü': 'u',
+      'Ç': 'c'
+    };
+    return text.split('').map((c) => map[c] ?? c).join();
+  }
+
+  bool _matchCat(String a, String b) {
+    final na = _normalize(a.toLowerCase());
+    final nb = _normalize(b.toLowerCase());
+    return na == nb || na.contains(nb) || nb.contains(na);
+  }
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
   final TextEditingController _estabelecimentoController =
@@ -69,8 +92,10 @@ class _GastoViewState extends State<GastoView> {
         String categoria = defaultCat;
         if (nomeCat.isNotEmpty) {
           final match = categoriasVm.firstWhere(
-            (c) => c.titulo.toLowerCase() == nomeCat.toLowerCase(),
-            orElse: () => categoriasVm.isNotEmpty ? categoriasVm.first : Categoria(titulo: defaultCat, descricao: '', usuarioId: 0),
+            (c) => _matchCat(c.titulo, nomeCat),
+            orElse: () => categoriasVm.isNotEmpty
+                ? categoriasVm.first
+                : Categoria(titulo: defaultCat, descricao: '', usuarioId: 0),
           );
           categoria = match.titulo;
         }
