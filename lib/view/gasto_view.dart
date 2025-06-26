@@ -7,6 +7,7 @@ import '../view_model/categoria_view_model.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/dashboard_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
+import 'package:expenses_control/models/categoria.dart';
 
 class GastoView extends StatefulWidget {
   final Map<String, dynamic>? dadosIniciais;
@@ -60,16 +61,37 @@ class _GastoViewState extends State<GastoView> {
 
     final List<dynamic> itens = dados['itens'] ?? [];
     if (itens.isNotEmpty) {
-      final categorias = context.read<CategoriaViewModel>().categorias;
-      final cat = categorias.isNotEmpty ? categorias.first.titulo : 'Outros';
-      _produtos = itens
-          .map((item) => {
-                'descricao': item['nome'] ?? '',
-                'quantidade': item['qtd']?.toString() ?? '1',
-                'preco': item['valor_unitario']?.toStringAsFixed(2) ?? '0.00',
-                'categoria': cat
-              })
-          .toList();
+      final categoriasVm = context.read<CategoriaViewModel>().categorias;
+      final defaultCat = categoriasVm.isNotEmpty ? categoriasVm.first.titulo : 'Outros';
+
+      _produtos = itens.map((item) {
+        final nomeCat = (item['categoria'] as String?)?.trim() ?? '';
+        String categoria = defaultCat;
+        if (nomeCat.isNotEmpty) {
+          final match = categoriasVm.firstWhere(
+            (c) => c.titulo.toLowerCase() == nomeCat.toLowerCase(),
+            orElse: () => categoriasVm.isNotEmpty ? categoriasVm.first : Categoria(titulo: defaultCat, descricao: '', usuarioId: 0),
+          );
+          categoria = match.titulo;
+        }
+
+        final precoValor = item['valor_unitario'];
+        String preco;
+        if (precoValor is num) {
+          preco = precoValor.toStringAsFixed(2);
+        } else if (precoValor != null) {
+          preco = precoValor.toString();
+        } else {
+          preco = '0.00';
+        }
+
+        return {
+          'descricao': item['nome'] ?? '',
+          'quantidade': item['qtd']?.toString() ?? '1',
+          'preco': preco,
+          'categoria': categoria,
+        };
+      }).toList();
     }
     _descControllers.clear();
     _qtdControllers.clear();
