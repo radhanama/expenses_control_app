@@ -48,7 +48,11 @@ dependencies:
   url_launcher: 
   flutter_dotenv: 
   collection: 
-  month_picker_dialog: 
+  month_picker_dialog:
+
+dependency_overrides:
+  month_picker_dialog:
+    path: patched_packages/month_picker_dialog
 
 dev_dependencies:
   flutter_test:
