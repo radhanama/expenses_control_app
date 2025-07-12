@@ -7,7 +7,9 @@
         {
             "name": "expenses_control_app",
             "request": "launch",
-            "type": "dart"
+            "toolArgs": ["-d", "linux"],
+            "type": "dart",
+            "flutterMode": "debug"
         },
         {
             "name": "expenses_control_app (profile mode)",
