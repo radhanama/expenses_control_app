@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import '../view_model/extrato_view_model.dart';
 import '../view_model/categoria_view_model.dart';
-import '../models/gasto.dart';
+import 'package:expenses_control/models/gasto.dart';
 import 'gasto_detalhe_view.dart';
 
 class ExtratoView extends StatefulWidget {
