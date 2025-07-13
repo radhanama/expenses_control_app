@@ -21,7 +21,10 @@ void main() {
     const url =
         'https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode?p=33240801438784002302650190001481261139805478|2|1|2|2ec33231f58883c2b33b054a7aee2a3a4f3790c7';
 
-    final data = await scrapingService.scrapeNfceFromUrl(url);
+    final data = await scrapingService.scrapeNfceFromUrl(
+      url,
+      ignoreBadCertificate: true,
+    );
 
     expect(data, isA<Map<String, dynamic>>());
     expect(data, contains('estabelecimento'));
