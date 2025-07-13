@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:http/io_client.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart' as dom;
 import 'gemini_service.dart';
@@ -11,9 +13,19 @@ class WebScrapingService {
 
   /// Busca o conteúdo HTML de uma URL da NFC-e e o analisa.
   Future<Map<String, dynamic>> scrapeNfceFromUrl(String url,
-      {List<String> categorias = const []}) async {
+      {List<String> categorias = const [], bool ignoreBadCertificate = false}) async {
     try {
-      final response = await http.get(Uri.parse(url));
+      http.Client client;
+      if (ignoreBadCertificate) {
+        final ioHttpClient = HttpClient()
+          ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+        client = IOClient(ioHttpClient);
+      } else {
+        client = http.Client();
+      }
+
+      final response = await client.get(Uri.parse(url));
+      client.close();
 
       if (response.statusCode == 200) {
         try {
