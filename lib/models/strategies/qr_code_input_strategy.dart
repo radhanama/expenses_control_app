@@ -12,6 +12,10 @@ class QrCodeInputStrategy implements GastoInputStrategy {
 
   @override
   Future<Map<String, dynamic>> process(String input) {
-    return _scrapingService.scrapeNfceFromUrl(input, categorias: _categorias);
+    return _scrapingService.scrapeNfceFromUrl(
+      input,
+      categorias: _categorias,
+      ignoreBadCertificate: true,
+    );
   }
 }

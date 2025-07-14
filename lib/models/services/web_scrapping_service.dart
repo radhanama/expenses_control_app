@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:http/io_client.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:html/dom.dart' as dom;
 import 'gemini_service.dart';
@@ -11,11 +13,28 @@ class WebScrapingService {
 
   /// Busca o conteúdo HTML de uma URL da NFC-e e o analisa.
   Future<Map<String, dynamic>> scrapeNfceFromUrl(String url,
-      {List<String> categorias = const []}) async {
+      {List<String> categorias = const [], bool ignoreBadCertificate = false}) async {
     try {
-      final response = await http.get(Uri.parse(url));
+      http.Client client;
+      if (ignoreBadCertificate) {
+        final ioHttpClient = HttpClient()
+          ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+        client = IOClient(ioHttpClient);
+      } else {
+        client = http.Client();
+      }
+
+      final response = await client.get(Uri.parse(url));
+      client.close();
 
       if (response.statusCode == 200) {
+        if (_pageRequiresRecaptcha(response.body)) {
+          return {
+            'requiresRecaptcha': true,
+            'html': response.body,
+            'url': url,
+          };
+        }
         try {
           final data = _parseNfceHtmlDart(response.body);
           if (data['itens'] == null || (data['itens'] as List).isEmpty) {
@@ -33,6 +52,25 @@ class WebScrapingService {
     } catch (e) {
       // print("Erro no scraping: $e");
       throw Exception('Não foi possível conectar ao serviço da nota fiscal. Verifique sua conexão.');
+    }
+  }
+
+  /// Analisa diretamente o HTML obtido de uma NFC-e.
+  ///
+  /// Esse método é útil quando o usuário resolve um reCAPTCHA em uma
+  /// WebView e o aplicativo captura o HTML resultante para processamento.
+  Future<Map<String, dynamic>> parseNfceHtml(String html,
+      {List<String> categorias = const []}) async {
+    try {
+      final data = _parseNfceHtmlDart(html);
+      if (data['itens'] == null || (data['itens'] as List).isEmpty) {
+        return await _gemini.parseExpenseFromHtml(html,
+            categorias: categorias);
+      }
+      return data;
+    } catch (_) {
+      return await _gemini.parseExpenseFromHtml(html,
+          categorias: categorias);
     }
   }
 
@@ -227,6 +265,12 @@ class WebScrapingService {
     data['outras_informacoes'] = outrasInfos;
 
     return data;
+  }
+
+  bool _pageRequiresRecaptcha(String html) {
+    final doc = parse(html);
+    return doc.querySelector('#btSubmitQRCode') != null &&
+        doc.querySelector('script[src*="recaptcha"]') != null;
   }
 
   // Funções Auxiliares
