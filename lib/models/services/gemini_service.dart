@@ -165,7 +165,7 @@ $html''';
   Future<Map<String, dynamic>> parseExpenseFromImage(Uint8List bytes,
       {List<String> categorias = const [], String mimeType = 'image/jpeg'}) async {
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=' +
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
             apiKey);
 
     final categoriasTexto = categorias.isNotEmpty
