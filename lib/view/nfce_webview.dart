@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../view_model/gasto_view_model.dart';
 import 'gasto_view.dart';
 
@@ -52,12 +53,25 @@ class _NfceWebViewState extends State<NfceWebView> {
     }
   }
 
+  Future<void> _abrirNoNavegador() async {
+    final uri = Uri.parse(widget.url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o navegador.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nota Fiscal'),
         actions: [
+          IconButton(onPressed: _abrirNoNavegador, icon: const Icon(Icons.open_in_browser)),
           IconButton(onPressed: _importar, icon: const Icon(Icons.check)),
         ],
       ),

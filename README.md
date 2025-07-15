@@ -47,3 +47,9 @@ Quando a leitura direta da NFC-e pelo scraper falha, o aplicativo envia o
 HTML obtido da nota fiscal para o Gemini, que extrai os dados no mesmo formato
 JSON. Assim ainda é possível preencher a tela mesmo que o layout do site mude.
 
+### Abrir nota no navegador
+
+Se preferir verificar a página original da NFC-e ao escanear o QR Code, toque
+no ícone de abrir no navegador que aparece na tela da nota. O aplicativo
+tentará abrir a URL no navegador padrão do dispositivo.
+
