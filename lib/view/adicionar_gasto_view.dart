@@ -2,8 +2,9 @@ import 'package:expenses_control_app/view/gasto_view.dart';
 import 'package:expenses_control_app/view/gemini_text_view.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart'; // Importe o novo pacote
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AdicionarGastoView extends StatefulWidget {
   @override
@@ -63,6 +64,26 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
           });
         }
       }
+    }
+  }
+
+  Future<void> _tirarFoto() async {
+    final picker = ImagePicker();
+    final foto = await picker.pickImage(source: ImageSource.camera);
+    if (foto == null) return;
+    final vm = context.read<GastoViewModel>();
+    final sucesso = await vm.processarImagem(foto.path);
+    if (!mounted) return;
+    if (sucesso) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => GastoView(dadosIniciais: vm.scrapedData)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.errorMessage ?? 'Erro desconhecido')),
+      );
     }
   }
 
@@ -144,8 +165,23 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                  ),
+                  label: Text('Inserir por Texto', style: TextStyle(fontSize: 18)),
+                  ),
+                  SizedBox(height: 12),
+                  // Botão de Inserção via foto
+                  OutlinedButton.icon(
+                    icon: Icon(Icons.photo_camera),
+                    onPressed: _tirarFoto,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.orange, width: 1.5),
+                      foregroundColor: Colors.orange,
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    label: Text('Inserir por Texto', style: TextStyle(fontSize: 18)),
+                    label: Text('Inserir por Foto', style: TextStyle(fontSize: 18)),
                   ),
                   SizedBox(height: 12),
                   // Botão de Inserção Manual
