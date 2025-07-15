@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../models/strategies/gasto_input_strategy.dart';
 import '../models/strategies/qr_code_input_strategy.dart';
 import '../models/strategies/text_input_strategy.dart';
+import '../models/strategies/image_input_strategy.dart';
 
 class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
@@ -87,5 +88,13 @@ class GastoViewModel extends ChangeNotifier {
     final estrategia = QrCodeInputStrategy(
         scrapingService: _webScrapingService, categorias: nomesCategorias);
     return _processar(url, estrategia);
+  }
+
+  Future<bool> processarImagem(String caminho) async {
+    final cats = await _categoriaRepo.findAll();
+    final nomesCategorias = cats.map((c) => c.titulo).toList();
+    final estrategia = ImageInputStrategy(
+        geminiService: _geminiService, categorias: nomesCategorias);
+    return _processar(caminho, estrategia);
   }
 }

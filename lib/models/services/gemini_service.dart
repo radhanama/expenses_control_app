@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -133,6 +134,67 @@ $html''';
         {
           'parts': [
             {'text': prompt}
+          ]
+        }
+      ]
+    });
+
+    final response = await _client.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final String? answer =
+          data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      if (answer == null) {
+        throw Exception('Resposta invalida do Gemini');
+      }
+
+      final match = RegExp(r'\{[\s\S]*\}').firstMatch(answer);
+      final jsonString = match != null ? match.group(0) : answer;
+
+      return json.decode(jsonString!);
+    } else {
+      throw Exception('Erro na API Gemini: ${response.body}');
+    }
+  }
+  /// Analisa uma imagem de nota fiscal e extrai os dados da compra.
+  Future<Map<String, dynamic>> parseExpenseFromImage(Uint8List bytes,
+      {List<String> categorias = const [], String mimeType = 'image/jpeg'}) async {
+    final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=' +
+            apiKey);
+
+    final categoriasTexto = categorias.isNotEmpty
+        ? '\nClassifique cada item na melhor categoria dentre: ${categorias.join(', ')}.'
+        : '';
+
+    final hoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+    final prompt = '''Extraia as informações da nota fiscal na imagem e retorne apenas o JSON no formato:
+{
+  "estabelecimento": {"nome": "", "endereco_completo": ""},
+  "informacao_geral": {"data_hora_emissao": "dd/MM/yyyy HH:mm:ss"},
+  "itens": [{"nome": "", "qtd": numero, "valor_unitario": numero, "valor_total_item": numero, "categoria": ""}],
+  "compra": {"valor_a_pagar": numero}
+}
+${categoriasTexto}
+Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informada.''';
+
+    final body = jsonEncode({
+      'contents': [
+        {
+          'parts': [
+            {'text': prompt},
+            {
+              'inlineData': {
+                'mimeType': mimeType,
+                'data': base64Encode(bytes)
+              }
+            }
           ]
         }
       ]

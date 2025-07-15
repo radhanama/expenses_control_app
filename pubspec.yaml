@@ -44,8 +44,9 @@ dependencies:
   http: 
   fl_chart: 
   intl: 
-  mobile_scanner: 
-  url_launcher: 
+  mobile_scanner:
+  image_picker:
+  url_launcher:
   flutter_dotenv: 
   collection: 
   month_picker_dialog: 
