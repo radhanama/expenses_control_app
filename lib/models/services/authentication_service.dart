@@ -34,6 +34,7 @@ class AuthenticationService {
     required String nome,
     required String email,
     required String senhaPura,
+    PlanoUsuario plano = PlanoUsuario.gratuito,
   }) async {
     if (await _usuarioRepo.emailExists(email)) {
       throw AuthenticationException('E-mail já cadastrado');
@@ -42,6 +43,7 @@ class AuthenticationService {
       nome: nome,
       email: email,
       senhaHash: _hash(senhaPura),
+      plano: plano,
     );
     return _usuarioRepo.create(novo);
   }

@@ -29,12 +29,13 @@ class UsuarioViewModel extends ChangeNotifier {
   }
 
   Future<void> registrar(String email, String senha,
-      {required String nome}) async {
+      {required String nome, PlanoUsuario plano = PlanoUsuario.gratuito}) async {
     await _wrapAsync(() async {
       _usuarioLogado = await auth.registrar(
         nome: nome,
         email: email,
         senhaPura: senha,
+        plano: plano,
       );
     });
   }

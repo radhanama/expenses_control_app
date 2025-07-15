@@ -1,11 +1,14 @@
 import 'package:expenses_control_app/view/gasto_view.dart';
 import 'package:expenses_control_app/view/gemini_text_view.dart';
+import 'package:expenses_control_app/view/simple_text_view.dart';
 import 'package:expenses_control_app/view/nfce_webview.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../view_model/usuario_view_model.dart';
+import 'package:expenses_control/models/usuario.dart';
 
 class AdicionarGastoView extends StatefulWidget {
   @override
@@ -97,6 +100,12 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
   Widget build(BuildContext context) {
     return Consumer<GastoViewModel>(
       builder: (context, viewModel, child) {
+        final plano =
+            context.watch<UsuarioViewModel>().usuarioLogado?.plano ??
+                PlanoUsuario.gratuito;
+        final isGold = plano == PlanoUsuario.ouro;
+        final isSilver = plano == PlanoUsuario.prata;
+        final isFree = plano == PlanoUsuario.gratuito;
         return Scaffold(
           appBar: AppBar(
             title: Text('Adicionar Despesa'),
@@ -140,59 +149,67 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Aponte a câmera para o QR Code", style: Theme.of(context).textTheme.titleMedium),
-                  SizedBox(height: 20),
-                  // Área do Scanner
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    height: MediaQuery.of(context).size.width * 0.9,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: MobileScanner(
-                        controller: cameraController,
-                        onDetect: _handleBarcode,
+                  if (!isFree) ...[
+                    Text('Aponte a câmera para o QR Code',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.width * 0.9,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: MobileScanner(
+                          controller: cameraController,
+                          onDetect: _handleBarcode,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 30),
-                  // Botão de Inserção por texto usando Gemini
+                    const SizedBox(height: 30),
+                  ],
                   OutlinedButton.icon(
-                    icon: Icon(Icons.text_fields),
+                    icon: const Icon(Icons.text_fields),
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const GeminiTextView()),
+                        MaterialPageRoute(
+                            builder: (context) => isFree
+                                ? const SimpleTextView()
+                                : const GeminiTextView()),
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.green, width: 1.5),
+                      side: const BorderSide(color: Colors.green, width: 1.5),
                       foregroundColor: Colors.green,
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                  ),
-                  label: Text('Inserir por Texto', style: TextStyle(fontSize: 18)),
-                  ),
-                  SizedBox(height: 12),
-                  // Botão de Inserção via foto
-                  OutlinedButton.icon(
-                    icon: Icon(Icons.photo_camera),
-                    onPressed: _tirarFoto,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.orange, width: 1.5),
-                      foregroundColor: Colors.orange,
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    label: Text('Inserir por Foto', style: TextStyle(fontSize: 18)),
+                    label: Text('Inserir por Texto',
+                        style: const TextStyle(fontSize: 18)),
                   ),
-                  SizedBox(height: 12),
-                  // Botão de Inserção Manual
+                  const SizedBox(height: 12),
+                  if (isGold) ...[
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.photo_camera),
+                      onPressed: _tirarFoto,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.orange, width: 1.5),
+                        foregroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      label: const Text('Inserir por Foto',
+                          style: TextStyle(fontSize: 18)),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   OutlinedButton.icon(
-                    icon: Icon(Icons.edit),
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -200,14 +217,16 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.blue, width: 1.5),
+                      side: const BorderSide(color: Colors.blue, width: 1.5),
                       foregroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    label: Text('Inserir Manualmente', style: TextStyle(fontSize: 18)),
+                    label: const Text('Inserir Manualmente',
+                        style: TextStyle(fontSize: 18)),
                   ),
                 ],
               ),

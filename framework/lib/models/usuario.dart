@@ -7,6 +7,8 @@ import 'base/entity_mapper.dart';
 import 'gasto.dart';
 import 'dashboard/dashboard_dto.dart'; // implement or swap for your own DTO
 
+enum PlanoUsuario { gratuito, prata, ouro }
+
 class Usuario with EntityMapper {
   // ─────────────────── Fields ───────────────────
   @override
@@ -14,6 +16,7 @@ class Usuario with EntityMapper {
   final String nome;
   final String email;
   final String senhaHash; // stored hash, not plaintext
+  final PlanoUsuario plano;
 
   /// Optional in-memory cache of gastos (usually loaded via repository).
   final List<Gasto> gastos;
@@ -24,6 +27,7 @@ class Usuario with EntityMapper {
     required this.nome,
     required this.email,
     required this.senhaHash,
+    this.plano = PlanoUsuario.gratuito,
     this.gastos = const [],
   });
 
@@ -40,6 +44,7 @@ class Usuario with EntityMapper {
       nome: map['nome'] as String? ?? '',
       email: map['email'] as String? ?? '',
       senhaHash: map['senha_hash'] as String? ?? '',
+      plano: _planoFromString(map['plano'] as String?),
     );
   }
 
@@ -49,6 +54,7 @@ class Usuario with EntityMapper {
         'nome': nome,
         'email': email,
         'senha_hash': senhaHash,
+        'plano': plano.name,
       };
 
   // ───────── Domain helpers (as in UML) ─────────
@@ -65,6 +71,7 @@ class Usuario with EntityMapper {
     String? nome,
     String? email,
     String? senhaHash,
+    PlanoUsuario? plano,
     List<Gasto>? gastos,
   }) =>
       Usuario(
@@ -72,6 +79,18 @@ class Usuario with EntityMapper {
         nome: nome ?? this.nome,
         email: email ?? this.email,
         senhaHash: senhaHash ?? this.senhaHash,
+        plano: plano ?? this.plano,
         gastos: gastos ?? this.gastos,
       );
+}
+
+PlanoUsuario _planoFromString(String? value) {
+  switch (value) {
+    case 'ouro':
+      return PlanoUsuario.ouro;
+    case 'prata':
+      return PlanoUsuario.prata;
+    default:
+      return PlanoUsuario.gratuito;
+  }
 }

@@ -22,7 +22,7 @@ Future<Database> openAppDatabase() async {
   // ───── Open and migrate ─────
   return openDatabase(
     path,
-    version: 2,
+    version: 3,
     onCreate: _onCreate,
     onOpen: (db) async {
       await _seedData(db);
@@ -38,7 +38,8 @@ Future<void> _onCreate(Database db, int version) async {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       nome        TEXT    NOT NULL,
       email       TEXT    NOT NULL UNIQUE,
-      senha_hash  TEXT    NOT NULL
+      senha_hash  TEXT    NOT NULL,
+      plano       TEXT    NOT NULL DEFAULT 'gratuito'
     );
   ''');
 
@@ -134,12 +135,17 @@ Future<void> _onUpgrade(Database db, int oldV, int newV) async {
       );
     ''');
   }
+  if (oldV < 3) {
+    await db.execute("ALTER TABLE usuarios ADD COLUMN plano TEXT NOT NULL DEFAULT 'gratuito'");
+  }
 }
 
 Future<void> _seedData(Database db) async {
   final count = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM categorias'));
-  if (count == 0) {
+  final userCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM usuarios'));
+  if (count == 0 && userCount != 0) {
     final batch = db.batch();
     const categorias = [
       {

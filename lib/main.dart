@@ -7,6 +7,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:expenses_control_app/view/main_view.dart';
+import 'package:expenses_control_app/view/usuario_view.dart';
+import 'package:expenses_control/models/usuario.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:expenses_control_app/view_model/extrato_view_model.dart';
@@ -14,6 +16,7 @@ import 'package:expenses_control_app/view_model/dashboard_view_model.dart';
 import 'package:expenses_control_app/models/services/dashboard_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
 import 'package:expenses_control_app/models/services/notificacao_service.dart';
+import 'package:expenses_control_app/models/services/simple_text_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'models/databases/database.dart';
 import 'models/data/categoria_repository.dart';
@@ -66,6 +69,7 @@ void main() async {
         ),
         Provider(create: (_) => NotificacaoRepository(db)),
         Provider(create: (_) => GeminiService(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '')),
+        Provider(create: (_) => SimpleTextService()),
         Provider(
           create: (ctx) => NotificacaoService(
             gastoRepo: ctx.read<GastoRepository>(),
@@ -84,6 +88,7 @@ void main() async {
           create: (ctx) => GastoViewModel(
             webScrapingService: ctx.read<WebScrapingService>(),
             geminiService: ctx.read<GeminiService>(),
+            simpleTextService: ctx.read<SimpleTextService>(),
             repo: ctx.read<GastoRepository>(),
             categoriaRepo: ctx.read<CategoriaRepository>(),
           ),
@@ -116,7 +121,26 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MainView(),
+      home: const StartupView(),
+    );
+  }
+}
+class StartupView extends StatelessWidget {
+  const StartupView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = context.read<UsuarioRepository>();
+    return FutureBuilder<List<Usuario>>( 
+      future: repo.findAll(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return snapshot.data!.isEmpty ? const UsuarioView() : MainView();
+      },
     );
   }
 }
