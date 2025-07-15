@@ -48,6 +48,20 @@ class WebScrapingService {
     }
   }
 
+  /// Analisa o HTML de uma NFC-e já carregado no navegador.
+  Future<Map<String, dynamic>> parseNfceHtml(String html,
+      {List<String> categorias = const []}) async {
+    try {
+      final data = _parseNfceHtmlDart(html);
+      if (data['itens'] == null || (data['itens'] as List).isEmpty) {
+        return await _gemini.parseExpenseFromHtml(html, categorias: categorias);
+      }
+      return data;
+    } catch (_) {
+      return await _gemini.parseExpenseFromHtml(html, categorias: categorias);
+    }
+  }
+
   /// Analisa o conteúdo HTML de uma NFC-e e extrai os dados.
   Map<String, dynamic> _parseNfceHtmlDart(String htmlContent) {
     final document = parse(htmlContent);

@@ -47,9 +47,10 @@ dependencies:
   mobile_scanner:
   image_picker:
   url_launcher:
-  flutter_dotenv: 
-  collection: 
-  month_picker_dialog: 
+  flutter_dotenv:
+  collection:
+  month_picker_dialog:
+  webview_flutter:
 
 dev_dependencies:
   flutter_test:

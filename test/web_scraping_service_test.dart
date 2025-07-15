@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
@@ -26,6 +27,17 @@ void main() {
       ignoreBadCertificate: true,
     );
 
+    expect(data, isA<Map<String, dynamic>>());
+    expect(data, contains('estabelecimento'));
+    expect(data, contains('itens'));
+    expect(data, contains('compra'));
+  });
+
+  test('parse NFCe HTML string', () async {
+    final scrapingService =
+        WebScrapingService(geminiService: FakeGeminiService());
+    final html = await File('assets/Consulta DF-e.html').readAsString();
+    final data = await scrapingService.parseNfceHtml(html);
     expect(data, isA<Map<String, dynamic>>());
     expect(data, contains('estabelecimento'));
     expect(data, contains('itens'));

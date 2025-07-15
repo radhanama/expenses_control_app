@@ -8,6 +8,7 @@ import '../models/strategies/gasto_input_strategy.dart';
 import '../models/strategies/qr_code_input_strategy.dart';
 import '../models/strategies/text_input_strategy.dart';
 import '../models/strategies/image_input_strategy.dart';
+import '../models/strategies/html_input_strategy.dart';
 
 class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
@@ -88,6 +89,14 @@ class GastoViewModel extends ChangeNotifier {
     final estrategia = QrCodeInputStrategy(
         scrapingService: _webScrapingService, categorias: nomesCategorias);
     return _processar(url, estrategia);
+  }
+
+  Future<bool> processarHtml(String html) async {
+    final cats = await _categoriaRepo.findAll();
+    final nomesCategorias = cats.map((c) => c.titulo).toList();
+    final estrategia = HtmlInputStrategy(
+        scrapingService: _webScrapingService, categorias: nomesCategorias);
+    return _processar(html, estrategia);
   }
 
   Future<bool> processarImagem(String caminho) async {

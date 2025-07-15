@@ -1,5 +1,6 @@
 import 'package:expenses_control_app/view/gasto_view.dart';
 import 'package:expenses_control_app/view/gemini_text_view.dart';
+import 'package:expenses_control_app/view/nfce_webview.dart';
 import 'package:expenses_control_app/view_model/gasto_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -38,31 +39,36 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
       final success = await viewModel.processarQRCode(code);
 
       if (success && mounted) {
-        // Navega para a tela de gasto com os dados
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => GastoView(dadosIniciais: viewModel.scrapedData),
           ),
         ).then((_) {
-          // Quando voltar da tela de cadastro, reinicia o processamento
-          if(mounted) {
+          if (mounted) {
             setState(() {
               _isProcessing = false;
             });
           }
         });
-      } else {
-        // Se falhar, exibe o erro
+      } else if (mounted && code.startsWith('https://')) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => NfceWebView(url: code)),
+        );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(viewModel.errorMessage ?? 'Ocorreu um erro desconhecido.')),
-          );
-          await Future.delayed(const Duration(seconds: 3)); // Delay para o usuário ler o erro
           setState(() {
-            _isProcessing = false; // Permite nova tentativa
+            _isProcessing = false;
           });
         }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(viewModel.errorMessage ?? 'Ocorreu um erro desconhecido.')),
+        );
+        await Future.delayed(const Duration(seconds: 3));
+        setState(() {
+          _isProcessing = false;
+        });
       }
     }
   }
