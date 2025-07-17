@@ -11,29 +11,35 @@ class PostgresSyncService {
       : _client = client ?? http.Client();
 
   Future<void> pushData(Usuario usuario, List<Gasto> gastos) async {
-    final url = Uri.parse('$baseUrl/sync');
-    final body = jsonEncode({
-      'usuario': usuario.toMap(),
-      'gastos': gastos.map((g) => g.toMap()).toList(),
-    });
-    final res = await _client.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-    if (res.statusCode != 200) {
-      throw Exception('Falha ao sincronizar dados');
+    try {
+      final url = Uri.parse('$baseUrl/sync');
+      final body = jsonEncode({
+        'usuario': usuario.toMap(),
+        'gastos': gastos.map((g) => g.toMap()).toList(),
+      });
+      final res = await _client.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+      if (res.statusCode != 200) {
+        // ignore errors when server unavailable
+        return;
+      }
+    } catch (_) {
+      // ignore network errors silently
     }
   }
 
   Future<List<Map<String, dynamic>>> fetchData(int userId) async {
-    final url = Uri.parse('$baseUrl/sync/$userId');
-    final res = await _client.get(url);
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body) as List;
-      return List<Map<String, dynamic>>.from(data);
-    } else {
-      throw Exception('Falha ao obter dados');
-    }
+    try {
+      final url = Uri.parse('$baseUrl/sync/$userId');
+      final res = await _client.get(url);
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as List;
+        return List<Map<String, dynamic>>.from(data);
+      }
+    } catch (_) {}
+    return [];
   }
 }

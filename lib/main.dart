@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:expenses_control/models/data/usuario_repository.dart';
@@ -27,13 +28,16 @@ import 'view_model/usuario_view_model.dart';
 import 'view_model/categoria_view_model.dart';
 import 'view_model/meta_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await initializeDateFormatting('pt_BR', null);
 
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

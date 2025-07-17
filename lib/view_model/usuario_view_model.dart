@@ -28,7 +28,7 @@ class UsuarioViewModel extends ChangeNotifier {
     await _wrapAsync(() async {
       _usuarioLogado = await auth.login(email: email, senhaPura: senha);
       if (_usuarioLogado != null) {
-        await sync.pushData(_usuarioLogado!, []);
+        await _safeSync(_usuarioLogado!);
       }
     });
   }
@@ -42,7 +42,7 @@ class UsuarioViewModel extends ChangeNotifier {
         senhaPura: senha,
         plano: plano,
       );
-      await sync.pushData(_usuarioLogado!, []);
+      await _safeSync(_usuarioLogado!);
     });
   }
 
@@ -67,6 +67,14 @@ class UsuarioViewModel extends ChangeNotifier {
     } finally {
       _loading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _safeSync(Usuario usuario) async {
+    try {
+      await sync.pushData(usuario, []);
+    } catch (_) {
+      // ignore sync errors
     }
   }
 }

@@ -12,12 +12,20 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 Future<Database> openAppDatabase() async {
-  // ───── resolve file location (~/Documents on iOS/Android) ─────
-  final docsDir = await getApplicationDocumentsDirectory();
   final dbName = dotenv.env['DB_FILENAME'] ?? 'finance.db';
-  final path = p.join(docsDir.path, dbName);
+  String path;
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+    path = dbName; // stored in IndexedDB
+  } else {
+    // ───── resolve file location (~/Documents on iOS/Android) ─────
+    final docsDir = await getApplicationDocumentsDirectory();
+    path = p.join(docsDir.path, dbName);
+  }
 
   // ───── Open and migrate ─────
   return openDatabase(

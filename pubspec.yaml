@@ -37,6 +37,7 @@ dependencies:
   provider: any
   sqflite:
   sqflite_common_ffi: any
+  sqflite_common_ffi_web: any
   sqlite3_flutter_libs: any
   expenses_control:
     path: framework
