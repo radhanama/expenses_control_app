@@ -1,6 +1,7 @@
 import 'package:expenses_control/models/data/usuario_repository.dart';
 import 'package:expenses_control/models/usuario.dart';
 import 'package:expenses_control_app/models/services/authentication_service.dart';
+import 'package:expenses_control_app/models/services/postgres_sync_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// View‑Model para a tela de autenticação.
@@ -8,8 +9,9 @@ import 'package:flutter/foundation.dart';
 class UsuarioViewModel extends ChangeNotifier {
   final UsuarioRepository repo;
   final AuthenticationService auth;
+  final PostgresSyncService sync;
 
-  UsuarioViewModel({required this.repo, required this.auth});
+  UsuarioViewModel({required this.repo, required this.auth, required this.sync});
 
   // ─────────── State ───────────
   bool _loading = false;
@@ -25,6 +27,9 @@ class UsuarioViewModel extends ChangeNotifier {
   Future<void> login(String email, String senha) async {
     await _wrapAsync(() async {
       _usuarioLogado = await auth.login(email: email, senhaPura: senha);
+      if (_usuarioLogado != null) {
+        await sync.pushData(_usuarioLogado!, []);
+      }
     });
   }
 
@@ -37,6 +42,7 @@ class UsuarioViewModel extends ChangeNotifier {
         senhaPura: senha,
         plano: plano,
       );
+      await sync.pushData(_usuarioLogado!, []);
     });
   }
 

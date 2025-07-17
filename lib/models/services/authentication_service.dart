@@ -8,7 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:expenses_control/models/data/usuario_repository.dart';
 import 'package:expenses_control/models/usuario.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'session_store.dart';
 
 class AuthenticationException implements Exception {
   final String message;
@@ -19,13 +19,13 @@ class AuthenticationException implements Exception {
 
 class AuthenticationService {
   final UsuarioRepository _usuarioRepo;
-  final FlutterSecureStorage? _secureStorage;
+  final SessionStore _session;
 
-  /// Optionally inject FlutterSecureStorage (or fake) for session persistence.
+  /// Optionally inject custom session store (or fake) for persistence.
   AuthenticationService(
     this._usuarioRepo, {
-    FlutterSecureStorage? secureStorage,
-  }) : _secureStorage = secureStorage;
+    SessionStore? sessionStore,
+  }) : _session = sessionStore ?? createSessionStore();
 
   // ===========================================================================
   //  REGISTRATION
@@ -62,9 +62,8 @@ class AuthenticationService {
       throw AuthenticationException('Senha incorreta');
     }
 
-    // Persist session if secure storage is available
-    await _secureStorage?.write(
-        key: _kCurrentUserId, value: user.id.toString());
+    // Persist session
+    await _session.saveUserId(user.id!);
 
     return user;
   }
@@ -73,17 +72,15 @@ class AuthenticationService {
   //  LOGOUT
   // ===========================================================================
   Future<void> logout() async {
-    await _secureStorage?.delete(key: _kCurrentUserId);
+    await _session.clear();
     //  If using tokens/JWT, revoke or clear cache here.
   }
 
   // ===========================================================================
   //  SESSION HELPERS
   // ===========================================================================
-  static const _kCurrentUserId = 'current_user_id';
-
   Future<Usuario?> currentUser() async {
-    final id = await _secureStorage?.read(key: _kCurrentUserId) as int?;
+    final id = await _session.readUserId();
     return id == null ? null : _usuarioRepo.findById(id);
   }
 
