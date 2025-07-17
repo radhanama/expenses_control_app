@@ -12,17 +12,25 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 Future<Database> openAppDatabase() async {
-  // ───── resolve file location (~/Documents on iOS/Android) ─────
-  final docsDir = await getApplicationDocumentsDirectory();
   final dbName = dotenv.env['DB_FILENAME'] ?? 'finance.db';
-  final path = p.join(docsDir.path, dbName);
+  String path;
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+    path = dbName; // stored in IndexedDB
+  } else {
+    // ───── resolve file location (~/Documents on iOS/Android) ─────
+    final docsDir = await getApplicationDocumentsDirectory();
+    path = p.join(docsDir.path, dbName);
+  }
 
   // ───── Open and migrate ─────
   return openDatabase(
     path,
-    version: 2,
+    version: 3,
     onCreate: _onCreate,
     onOpen: (db) async {
       await _seedData(db);
@@ -38,7 +46,8 @@ Future<void> _onCreate(Database db, int version) async {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       nome        TEXT    NOT NULL,
       email       TEXT    NOT NULL UNIQUE,
-      senha_hash  TEXT    NOT NULL
+      senha_hash  TEXT    NOT NULL,
+      plano       TEXT    NOT NULL DEFAULT 'gratuito'
     );
   ''');
 
@@ -134,12 +143,17 @@ Future<void> _onUpgrade(Database db, int oldV, int newV) async {
       );
     ''');
   }
+  if (oldV < 3) {
+    await db.execute("ALTER TABLE usuarios ADD COLUMN plano TEXT NOT NULL DEFAULT 'gratuito'");
+  }
 }
 
 Future<void> _seedData(Database db) async {
   final count = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM categorias'));
-  if (count == 0) {
+  final userCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM usuarios'));
+  if (count == 0 && userCount != 0) {
     final batch = db.batch();
     const categorias = [
       {

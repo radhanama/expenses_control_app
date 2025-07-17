@@ -2,6 +2,7 @@ import 'package:expenses_control/models/data/gasto_repository.dart';
 import 'package:expenses_control_app/models/data/categoria_repository.dart';
 import 'package:expenses_control_app/models/services/web_scrapping_service.dart';
 import 'package:expenses_control_app/models/services/gemini_service.dart';
+import 'package:expenses_control_app/models/services/simple_text_service.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'package:flutter/material.dart';
 import '../models/strategies/gasto_input_strategy.dart';
@@ -9,20 +10,24 @@ import '../models/strategies/qr_code_input_strategy.dart';
 import '../models/strategies/text_input_strategy.dart';
 import '../models/strategies/image_input_strategy.dart';
 import '../models/strategies/html_input_strategy.dart';
+import '../models/strategies/simple_text_input_strategy.dart';
 
 class GastoViewModel extends ChangeNotifier {
   final WebScrapingService _webScrapingService;
   final GeminiService _geminiService;
+  final SimpleTextService _simpleTextService;
   final GastoRepository _repo;
   final CategoriaRepository _categoriaRepo;
 
   GastoViewModel({
     required WebScrapingService webScrapingService,
     required GeminiService geminiService,
+    required SimpleTextService simpleTextService,
     required GastoRepository repo,
     required CategoriaRepository categoriaRepo,
   })  : _webScrapingService = webScrapingService,
         _geminiService = geminiService,
+        _simpleTextService = simpleTextService,
         _repo = repo,
         _categoriaRepo = categoriaRepo;
 
@@ -105,5 +110,10 @@ class GastoViewModel extends ChangeNotifier {
     final estrategia = ImageInputStrategy(
         geminiService: _geminiService, categorias: nomesCategorias);
     return _processar(caminho, estrategia);
+  }
+
+  Future<bool> processarTextoSimples(String texto) async {
+    final estrategia = SimpleTextInputStrategy(_simpleTextService);
+    return _processar(texto, estrategia);
   }
 }

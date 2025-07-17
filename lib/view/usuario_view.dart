@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/usuario_view_model.dart';
+import 'package:expenses_control/models/usuario.dart';
 
 /// Tela de autenticação (login & registro rápido)
 /// -----------------------------------------------------------------------------
@@ -16,11 +17,14 @@ class UsuarioView extends StatefulWidget {
 
 class _UsuarioViewState extends State<UsuarioView> {
   final _formKey = GlobalKey<FormState>();
+  final _nomeCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
+  PlanoUsuario _plano = PlanoUsuario.gratuito;
 
   @override
   void dispose() {
+    _nomeCtrl.dispose();
     _emailCtrl.dispose();
     _senhaCtrl.dispose();
     super.dispose();
@@ -67,6 +71,12 @@ class _UsuarioViewState extends State<UsuarioView> {
               ),
               const SizedBox(height: 32),
               TextFormField(
+                controller: _nomeCtrl,
+                decoration: const InputDecoration(labelText: 'Nome'),
+                validator: (v) => v != null && v.isNotEmpty ? null : 'Informe o nome',
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(labelText: 'E-mail'),
                 keyboardType: TextInputType.emailAddress,
@@ -80,6 +90,19 @@ class _UsuarioViewState extends State<UsuarioView> {
                 obscureText: true,
                 validator: (v) =>
                     v != null && v.length >= 6 ? null : 'Mínimo 6 caracteres',
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<PlanoUsuario>(
+                value: _plano,
+                decoration: const InputDecoration(labelText: 'Plano'),
+                items: const [
+                  DropdownMenuItem(
+                      value: PlanoUsuario.gratuito, child: Text('Gratuito')),
+                  DropdownMenuItem(
+                      value: PlanoUsuario.prata, child: Text('Prata')),
+                  DropdownMenuItem(value: PlanoUsuario.ouro, child: Text('Ouro')),
+                ],
+                onChanged: (v) => setState(() => _plano = v ?? PlanoUsuario.gratuito),
               ),
               const SizedBox(height: 32),
               if (vm.errorMessage != null) ...[
@@ -125,6 +148,11 @@ class _UsuarioViewState extends State<UsuarioView> {
   void _onRegisterPressed(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
     final vm = context.read<UsuarioViewModel>();
-    await vm.registrar(_emailCtrl.text.trim(), _senhaCtrl.text, nome: '');
+    await vm.registrar(
+      _emailCtrl.text.trim(),
+      _senhaCtrl.text,
+      nome: _nomeCtrl.text.trim(),
+      plano: _plano,
+    );
   }
 }
