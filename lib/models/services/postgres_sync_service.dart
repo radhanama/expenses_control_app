@@ -4,13 +4,16 @@ import 'package:expenses_control/models/gasto.dart';
 import 'package:expenses_control/models/usuario.dart';
 
 class PostgresSyncService {
-  final String baseUrl;
+  final String? baseUrl;
   final http.Client _client;
 
-  PostgresSyncService({this.baseUrl = 'https://meuservidor/api', http.Client? client})
+  PostgresSyncService({this.baseUrl, http.Client? client})
       : _client = client ?? http.Client();
 
+  bool get _disabled => baseUrl == null || baseUrl!.isEmpty;
+
   Future<void> pushData(Usuario usuario, List<Gasto> gastos) async {
+    if (_disabled) return;
     try {
       final url = Uri.parse('$baseUrl/sync');
       final body = jsonEncode({
@@ -32,6 +35,7 @@ class PostgresSyncService {
   }
 
   Future<List<Map<String, dynamic>>> fetchData(int userId) async {
+    if (_disabled) return [];
     try {
       final url = Uri.parse('$baseUrl/sync/$userId');
       final res = await _client.get(url);
