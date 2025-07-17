@@ -74,7 +74,11 @@ void main() async {
         Provider(create: (_) => NotificacaoRepository(db)),
         Provider(create: (_) => GeminiService(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '')),
         Provider(create: (_) => SimpleTextService()),
-        Provider(create: (_) => PostgresSyncService()),
+        Provider(
+          create: (_) => PostgresSyncService(
+            baseUrl: dotenv.env['SYNC_BASE_URL'],
+          ),
+        ),
         Provider(
           create: (ctx) => NotificacaoService(
             gastoRepo: ctx.read<GastoRepository>(),

@@ -24,7 +24,9 @@ cp .env.example .env
 ```
 
 Set your Gemini API key and optionally a custom database file name.
-The application loads these values at startup.
+You can also define `SYNC_BASE_URL` pointing to a REST API that syncs data
+to a PostgreSQL database. Leave it empty to disable remote sync and run the
+application completely offline. The application loads these values at startup.
 
 ### Gemini Text Input
 
