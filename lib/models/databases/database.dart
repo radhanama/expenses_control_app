@@ -15,6 +15,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
+import '../../utils/string_normalizer.dart';
+
 Future<Database> openAppDatabase() async {
   final dbName = dotenv.env['DB_FILENAME'] ?? 'finance.db';
   String path;
@@ -30,7 +32,7 @@ Future<Database> openAppDatabase() async {
   // ───── Open and migrate ─────
   return openDatabase(
     path,
-    version: 3,
+    version: 5,
     onCreate: _onCreate,
     onOpen: (db) async {
       await _seedData(db);
@@ -81,6 +83,7 @@ Future<void> _onCreate(Database db, int version) async {
       data       TEXT NOT NULL,
       categoria_id INTEGER NOT NULL,
       local      TEXT,
+      descricao_normalizada TEXT NOT NULL DEFAULT '',
       usuario_id INTEGER NOT NULL,
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
       FOREIGN KEY (categoria_id) REFERENCES categorias(id)
@@ -95,6 +98,19 @@ Future<void> _onCreate(Database db, int version) async {
       gasto_id       INTEGER,
       usuario_id     INTEGER NOT NULL,
       FOREIGN KEY (gasto_id) REFERENCES gastos(id),
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    );
+  ''');
+
+  await db.execute('''
+    CREATE TABLE categoria_cache (
+      id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+      descricao_original     TEXT NOT NULL,
+      descricao_normalizada  TEXT NOT NULL,
+      categoria_id           INTEGER NOT NULL,
+      usuario_id             INTEGER NOT NULL,
+      UNIQUE(descricao_normalizada, usuario_id),
+      FOREIGN KEY (categoria_id) REFERENCES categorias(id),
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
   ''');
@@ -145,6 +161,73 @@ Future<void> _onUpgrade(Database db, int oldV, int newV) async {
   }
   if (oldV < 3) {
     await db.execute("ALTER TABLE usuarios ADD COLUMN plano TEXT NOT NULL DEFAULT 'gratuito'");
+  }
+  if (oldV < 4) {
+    await db.execute('''
+      CREATE TABLE categoria_cache (
+        id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao_original     TEXT NOT NULL,
+        descricao_normalizada  TEXT NOT NULL,
+        categoria_id           INTEGER NOT NULL,
+        usuario_id             INTEGER NOT NULL,
+        UNIQUE(descricao_normalizada, usuario_id),
+        FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+      );
+    ''');
+  }
+  if (oldV < 5) {
+    await db.execute(
+        "ALTER TABLE gastos ADD COLUMN descricao_normalizada TEXT");
+    final rows = await db.query(
+      'gastos',
+      columns: ['id', 'local', 'descricao_normalizada', 'usuario_id'],
+    );
+    if (rows.isNotEmpty) {
+      final cachesPorUsuario = <int, List<Map<String, dynamic>>>{};
+      final batch = db.batch();
+      for (final row in rows) {
+        final atual = row['descricao_normalizada'] as String?;
+        if (atual == null || atual.isEmpty) {
+          final local = row['local'] as String? ?? '';
+          final usuarioId = row['usuario_id'] as int? ?? 0;
+          List<Map<String, dynamic>> cachesUsuario;
+          if (cachesPorUsuario.containsKey(usuarioId)) {
+            cachesUsuario = cachesPorUsuario[usuarioId]!;
+          } else {
+            cachesUsuario = await db.query(
+              'categoria_cache',
+              columns: ['descricao_normalizada'],
+              where: 'usuario_id = ?',
+              whereArgs: [usuarioId],
+            );
+            cachesPorUsuario[usuarioId] = cachesUsuario;
+          }
+
+          final normalizadoLocal = normalizeText(local);
+          String novoValor = normalizadoLocal;
+          for (final cache in cachesUsuario) {
+            final cacheDesc = cache['descricao_normalizada'] as String? ?? '';
+            if (cacheDesc == normalizadoLocal) {
+              novoValor = cacheDesc;
+              break;
+            }
+            if (cacheDesc.contains(normalizadoLocal) ||
+                normalizadoLocal.contains(cacheDesc)) {
+              novoValor = cacheDesc;
+            }
+          }
+
+          batch.update(
+            'gastos',
+            {'descricao_normalizada': novoValor},
+            where: 'id = ?',
+            whereArgs: [row['id']],
+          );
+        }
+      }
+      await batch.commit(noResult: true);
+    }
   }
 }
 

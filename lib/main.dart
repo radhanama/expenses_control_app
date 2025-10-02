@@ -22,13 +22,16 @@ import 'models/databases/database.dart';
 import 'models/data/categoria_repository.dart';
 import 'models/data/meta_repository.dart';
 import 'models/data/notificacao_repository.dart';
+import 'models/data/categoria_cache_repository.dart';
 import 'models/services/authentication_service.dart';
 import 'models/services/postgres_sync_service.dart';
 import 'view_model/usuario_view_model.dart';
 import 'view_model/categoria_view_model.dart';
 import 'view_model/meta_view_model.dart';
+import 'view_model/categoria_cache_view_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'models/services/extrato_import_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,9 +50,16 @@ void main() async {
     MultiProvider(
       providers: [
         Provider(create: (_) => CategoriaRepository(db)),
+        Provider(create: (_) => CategoriaCacheRepository(db)),
         ChangeNotifierProvider(
           create: (ctx) => CategoriaViewModel(ctx.read<CategoriaRepository>())
             ..carregarCategorias(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => CategoriaCacheViewModel(
+            cacheRepository: ctx.read<CategoriaCacheRepository>(),
+            categoriaRepository: ctx.read<CategoriaRepository>(),
+          ),
         ),
         Provider(create: (_) => UsuarioRepository(db)),
         Provider(
@@ -73,6 +83,14 @@ void main() async {
         ),
         Provider(create: (_) => NotificacaoRepository(db)),
         Provider(create: (_) => GeminiService(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '')),
+        Provider(
+          create: (ctx) => ExtratoImportService(
+            gastoRepository: ctx.read<GastoRepository>(),
+            categoriaRepository: ctx.read<CategoriaRepository>(),
+            cacheRepository: ctx.read<CategoriaCacheRepository>(),
+            geminiService: ctx.read<GeminiService>(),
+          ),
+        ),
         Provider(create: (_) => SimpleTextService()),
         Provider(create: (_) => PostgresSyncService()),
         Provider(
@@ -99,7 +117,10 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => ExtratoViewModel(ctx.read<GastoRepository>()),
+          create: (ctx) => ExtratoViewModel(
+            ctx.read<GastoRepository>(),
+            ctx.read<ExtratoImportService>(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (ctx) => DashboardViewModel(

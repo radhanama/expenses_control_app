@@ -6,6 +6,8 @@ import '../view_model/extrato_view_model.dart';
 import '../view_model/categoria_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'gasto_detalhe_view.dart';
+import 'extrato_import_view.dart';
+import 'categoria_cache_view.dart';
 
 class ExtratoView extends StatefulWidget {
   @override
@@ -41,6 +43,20 @@ class _ExtratoViewState extends State<ExtratoView> {
       appBar: AppBar(
         title: Text('Extrato de Gastos'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_note),
+            tooltip: 'Ajustar categorias sugeridas',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CategoriaCacheView(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -80,6 +96,18 @@ class _ExtratoViewState extends State<ExtratoView> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ExtratoImportView(),
+            ),
+          );
+        },
+        icon: const Icon(Icons.file_upload),
+        label: const Text('Importar extrato'),
       ),
     );
   }

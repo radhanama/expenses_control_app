@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../view_model/usuario_view_model.dart';
 import 'package:expenses_control/models/usuario.dart';
+import 'extrato_import_view.dart';
 
 class AdicionarGastoView extends StatefulWidget {
   @override
@@ -188,6 +189,29 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
                     ),
                     label: Text('Inserir por Texto',
                         style: const TextStyle(fontSize: 18)),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.receipt_long),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExtratoImportView(),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.blueGrey, width: 1.5),
+                      foregroundColor: Colors.blueGrey,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    label: const Text('Importar Extrato',
+                        style: TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 12),
                   if (isGold) ...[
