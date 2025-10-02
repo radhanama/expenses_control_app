@@ -1,13 +1,15 @@
+import 'package:expenses_control/models/categoria.dart';
+import 'package:expenses_control/models/gasto.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
-import '../view_model/extrato_view_model.dart';
+import 'package:provider/provider.dart';
+
 import '../view_model/categoria_view_model.dart';
-import 'package:expenses_control/models/gasto.dart';
-import 'gasto_detalhe_view.dart';
-import 'extrato_import_view.dart';
+import '../view_model/extrato_view_model.dart';
 import 'categoria_cache_view.dart';
+import 'extrato_import_view.dart';
+import 'gasto_detalhe_view.dart';
 
 class ExtratoView extends StatefulWidget {
   @override
@@ -16,7 +18,11 @@ class ExtratoView extends StatefulWidget {
 
 class _ExtratoViewState extends State<ExtratoView> {
   DateTime _selectedMonth = DateTime.now();
-  String _selectedCategory = 'Todas';
+  int? _selectedCategoryId;
+  final NumberFormat _currencyFormatter =
+      NumberFormat.simpleCurrency(locale: 'pt_BR');
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
@@ -25,19 +31,20 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   @override
+  void dispose() {
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final vm = context.watch<ExtratoViewModel>();
-    final categorias = context.watch<CategoriaViewModel>().categorias;
-    final catMap = {for (final c in categorias) c.id: c.titulo};
-
-    final filtered = vm.gastos.where((Gasto g) {
-      final catTitulo = catMap[g.categoriaId] ?? '';
-      return g.data.year == _selectedMonth.year &&
-          g.data.month == _selectedMonth.month &&
-          (_selectedCategory == 'Todas' || catTitulo == _selectedCategory);
-    }).toList();
-
-    final totalGasto = filtered.fold<double>(0, (sum, g) => sum + g.total);
+    final extratoViewModel = context.watch<ExtratoViewModel>();
+    final categoriaViewModel = context.watch<CategoriaViewModel>();
+    final categorias = categoriaViewModel.categorias;
+    final categoriaMap = _createCategoriaMap(categorias);
+    final filteredGastos = _applyFilters(extratoViewModel.gastos);
+    final totalGasto = _calculateTotal(filteredGastos);
 
     return Scaffold(
       appBar: AppBar(
@@ -60,40 +67,10 @@ class _ExtratoViewState extends State<ExtratoView> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Mês:'),
-                _buildMonthPicker(context),
-                Text('Categoria:'),
-                _buildCategoryDropdown(),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(12),
-            margin: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                    blurRadius: 2,
-                    color: Colors.grey.withOpacity(0.2),
-                    offset: Offset(0, 1))
-              ],
-            ),
-            child: Center(
-              child: Text('Total no mês: R\$ ${totalGasto.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 18)),
-            ),
-          ),
+          _buildFilters(categorias),
+          _buildSummaryCard(totalGasto),
           Expanded(
-            child: SingleChildScrollView(
-              child: _buildGastosTable(filtered, catMap),
-            ),
+            child: _buildGastosTable(filteredGastos, categoriaMap),
           ),
         ],
       ),
@@ -112,10 +89,50 @@ class _ExtratoViewState extends State<ExtratoView> {
     );
   }
 
+  Map<int?, String> _createCategoriaMap(List<Categoria> categorias) {
+    return {for (final categoria in categorias) categoria.id: categoria.titulo};
+  }
+
+  List<Gasto> _applyFilters(List<Gasto> gastos) {
+    return gastos.where((gasto) {
+      final sameYear = gasto.data.year == _selectedMonth.year;
+      final sameMonth = gasto.data.month == _selectedMonth.month;
+      final matchesCategory =
+          _selectedCategoryId == null || gasto.categoriaId == _selectedCategoryId;
+      return sameYear && sameMonth && matchesCategory;
+    }).toList();
+  }
+
+  double _calculateTotal(List<Gasto> gastos) {
+    return gastos.fold<double>(0, (sum, gasto) => sum + gasto.total);
+  }
+
+  Widget _buildFilters(List<Categoria> categorias) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          const Text('Mês:'),
+          _buildMonthPicker(context),
+          const Text('Categoria:'),
+          _buildCategoryDropdown(categorias),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMonthPicker(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
+    final monthLabel = toBeginningOfSentenceCase(
+          DateFormat('MMMM y', 'pt_BR').format(_selectedMonth),
+        ) ??
+        '';
+
+    return OutlinedButton.icon(
+      onPressed: () async {
+        final picked = await showMonthPicker(
           context: context,
           initialDate: _selectedMonth,
           firstDate: DateTime(2000),
@@ -126,90 +143,130 @@ class _ExtratoViewState extends State<ExtratoView> {
           setState(() => _selectedMonth = DateTime(picked.year, picked.month));
         }
       },
+      icon: const Icon(Icons.calendar_today_outlined, size: 18),
+      label: Text(monthLabel),
+    );
+  }
+
+  Widget _buildCategoryDropdown(List<Categoria> categorias) {
+    final dropdownItems = <DropdownMenuItem<int?>>[
+      const DropdownMenuItem<int?>(value: null, child: Text('Todas')),
+      ...categorias.map(
+        (categoria) => DropdownMenuItem<int?>(
+          value: categoria.id,
+          child: Text(categoria.titulo),
+        ),
+      ),
+    ];
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<int?>(
+        value: _selectedCategoryId,
+        items: dropdownItems,
+        onChanged: (value) {
+          setState(() => _selectedCategoryId = value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(double totalGasto) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(DateFormat('MMMM y', 'pt_BR').format(_selectedMonth)),
-            const Icon(Icons.arrow_drop_down),
+            const Text(
+              'Total no mês',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            Text(
+              _currencyFormatter.format(totalGasto),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCategoryDropdown() {
-    return Consumer<CategoriaViewModel>(
-      builder: (context, vm, _) {
-        final items = ['Todas', ...vm.categorias.map((c) => c.titulo)];
-        return DropdownButton<String>(
-          value: _selectedCategory,
-          items: items
-              .map((category) =>
-                  DropdownMenuItem(value: category, child: Text(category)))
-              .toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedCategory = value!;
-            });
-          },
-        );
-      },
-    );
-  }
-
   Widget _buildGastosTable(List<Gasto> gastos, Map<int?, String> catMap) {
     if (gastos.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
+      return const Center(
         child: Text('Nenhum gasto encontrado'),
       );
     }
 
-    final rows = gastos
-        .map(
-          (g) => DataRow(
-            cells: [
-              DataCell(Text(DateFormat('yyyy-MM-dd').format(g.data))),
-              DataCell(Text(catMap[g.categoriaId] ?? '')),
-              DataCell(Text('R\$ ${g.total.toStringAsFixed(2)}')),
-              DataCell(Text(g.local)),
-            ],
-            onSelectChanged: (_) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => GastoDetalheView(gasto: g),
-                ),
-              );
-            },
-          ),
-        )
-        .toList();
+    final sortedGastos = [...gastos]
+      ..sort((a, b) => b.data.compareTo(a.data));
 
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 2,
-            color: Colors.grey.withOpacity(0.2),
-            offset: const Offset(0, 1),
-          )
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Data')),
-            DataColumn(label: Text('Categoria')),
-            DataColumn(label: Text('Total')),
-            DataColumn(label: Text('Local')),
-          ],
-          rows: rows,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 1,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Scrollbar(
+              controller: _verticalScrollController,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: _verticalScrollController,
+                child: Scrollbar(
+                  controller: _horizontalScrollController,
+                  thumbVisibility: true,
+                  notificationPredicate: (notification) => notification.depth == 1,
+                  child: SingleChildScrollView(
+                    controller: _horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: constraints.maxWidth,
+                      ),
+                      child: DataTable(
+                        columnSpacing: 24,
+                        headingRowColor: MaterialStateProperty.resolveWith(
+                          (states) => Colors.grey.shade200,
+                        ),
+                        columns: const [
+                          DataColumn(label: Text('Data')),
+                          DataColumn(label: Text('Categoria')),
+                          DataColumn(label: Text('Total'), numeric: true),
+                          DataColumn(label: Text('Local')),
+                        ],
+                        rows: sortedGastos
+                            .map(
+                              (gasto) => DataRow(
+                                cells: [
+                                  DataCell(
+                                    Text(DateFormat('dd/MM/yyyy').format(gasto.data)),
+                                  ),
+                                  DataCell(Text(catMap[gasto.categoriaId] ?? '-')),
+                                  DataCell(Text(_currencyFormatter.format(gasto.total))),
+                                  DataCell(Text(gasto.local.isEmpty ? '-' : gasto.local)),
+                                ],
+                                onSelectChanged: (_) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => GastoDetalheView(gasto: gasto),
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
