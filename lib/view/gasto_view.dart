@@ -9,6 +9,8 @@ import '../view_model/dashboard_view_model.dart';
 import 'package:expenses_control/models/gasto.dart';
 import 'package:expenses_control/models/categoria.dart';
 
+import '../utils/string_normalizer.dart';
+
 class GastoView extends StatefulWidget {
   final Map<String, dynamic>? dadosIniciais;
 
@@ -179,6 +181,7 @@ class _GastoViewState extends State<GastoView> {
         total: double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0,
         data: _selectedDate ?? DateTime.now(),
         local: _localidadeController.text,
+        descricaoNormalizada: normalizeText(_localidadeController.text),
       );
       await vm.salvarGasto(gasto);
       // Refresh related view models so other screens update immediately

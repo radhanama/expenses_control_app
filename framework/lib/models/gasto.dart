@@ -10,6 +10,7 @@ class Gasto extends BaseUserEntity {
   final DateTime data;
   final int categoriaId;
   final String local;
+  final String descricaoNormalizada;
 
   // Not persisted in the same “gastos” table. You’ll likely store produtos
   // in a separate table and join later, but we keep the field here for domain
@@ -26,6 +27,7 @@ class Gasto extends BaseUserEntity {
     required this.data,
     required this.categoriaId,
     required this.local,
+    this.descricaoNormalizada = '',
     this.produtos = const [],
   });
 
@@ -39,6 +41,7 @@ class Gasto extends BaseUserEntity {
     DateTime? data,
     int? categoriaId,
     String? local,
+    String? descricaoNormalizada,
     List<Produto>? produtos,
   }) =>
       Gasto(
@@ -48,6 +51,8 @@ class Gasto extends BaseUserEntity {
         data: data ?? this.data,
         categoriaId: categoriaId ?? this.categoriaId,
         local: local ?? this.local,
+        descricaoNormalizada:
+            descricaoNormalizada ?? this.descricaoNormalizada,
         produtos: produtos ?? this.produtos,
       );
 
@@ -63,6 +68,7 @@ class Gasto extends BaseUserEntity {
         'data': data.toIso8601String(),
         'categoria_id': categoriaId,
         'local': local,
+        'descricao_normalizada': descricaoNormalizada,
         'usuario_id': usuarioId,
       };
 
@@ -86,6 +92,7 @@ class Gasto extends BaseUserEntity {
           : DateTime.now(),
       categoriaId: map['categoria_id'] as int? ?? 0,
       local: map['local'] as String? ?? '',
+      descricaoNormalizada: map['descricao_normalizada'] as String? ?? '',
     );
   }
 

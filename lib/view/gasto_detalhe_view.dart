@@ -6,6 +6,7 @@ import 'package:expenses_control/models/gasto.dart';
 import '../view_model/categoria_view_model.dart';
 import '../view_model/gasto_view_model.dart';
 import '../view_model/extrato_view_model.dart';
+import '../utils/string_normalizer.dart';
 
 class GastoDetalheView extends StatefulWidget {
   final Gasto gasto;
@@ -55,6 +56,7 @@ class _GastoDetalheViewState extends State<GastoDetalheView> {
       total: double.tryParse(_totalController.text.replaceAll(',', '.')) ??
           widget.gasto.total,
       categoriaId: _categoriaId ?? widget.gasto.categoriaId,
+      descricaoNormalizada: normalizeText(_localController.text),
     );
     await context.read<GastoViewModel>().atualizarGasto(atualizado);
     await context.read<ExtratoViewModel>().carregarGastos();

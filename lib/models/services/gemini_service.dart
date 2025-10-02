@@ -223,6 +223,44 @@ Considere que hoje é $hoje e utilize esta data caso nenhuma outra seja informad
     }
   }
 
+  Future<String> classificarTransacao({
+    required String descricao,
+    required List<String> categorias,
+    double? valor,
+    DateTime? data,
+    String? tipo,
+  }) async {
+    if (categorias.isEmpty) {
+      throw Exception('Nenhuma categoria disponível para classificação.');
+    }
+
+    if (apiKey.isEmpty) {
+      return categorias.first;
+    }
+
+    final buffer = StringBuffer()
+      ..writeln('Descrição: $descricao');
+    if (valor != null) {
+      buffer.writeln('Valor: ${valor.toStringAsFixed(2)}');
+    }
+    if (tipo != null && tipo.isNotEmpty) {
+      buffer.writeln('Tipo: $tipo');
+    }
+    if (data != null) {
+      buffer.writeln('Data: ${DateFormat('dd/MM/yyyy').format(data)}');
+    }
+
+    final prompt = '''Selecione a categoria mais adequada para a transação a seguir.
+Considere apenas as categorias listadas a seguir e retorne exatamente o nome de uma delas, sem texto adicional.
+Categorias: ${categorias.join(', ')}
+
+${buffer.toString()}''';
+
+    final resposta = await _generateText(prompt);
+    final primeiraLinha = resposta.split(RegExp(r'[\r\n]')).first.trim();
+    return primeiraLinha.isEmpty ? categorias.first : primeiraLinha;
+  }
+
   Future<String> sugestaoParaMeta(
       String descricao, double gastoAtual, double limite) async {
     final prompt =
