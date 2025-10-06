@@ -31,13 +31,21 @@ class WebScrapingService {
         try {
           final data = _parseNfceHtmlDart(response.body);
           if (data['itens'] == null || (data['itens'] as List).isEmpty) {
-            return await _gemini.parseExpenseFromHtml(response.body,
-                categorias: categorias);
+            return _ensureRequiredSections(
+              await _gemini.parseExpenseFromHtml(
+                response.body,
+                categorias: categorias,
+              ),
+            );
           }
           return data;
         } catch (_) {
-          return await _gemini.parseExpenseFromHtml(response.body,
-              categorias: categorias);
+          return _ensureRequiredSections(
+            await _gemini.parseExpenseFromHtml(
+              response.body,
+              categorias: categorias,
+            ),
+          );
         }
       } else {
         throw Exception('Falha ao carregar a página da nota fiscal. Status: ${response.statusCode}');
@@ -54,12 +62,36 @@ class WebScrapingService {
     try {
       final data = _parseNfceHtmlDart(html);
       if (data['itens'] == null || (data['itens'] as List).isEmpty) {
-        return await _gemini.parseExpenseFromHtml(html, categorias: categorias);
+        return _ensureRequiredSections(
+          await _gemini.parseExpenseFromHtml(
+            html,
+            categorias: categorias,
+          ),
+        );
       }
       return data;
     } catch (_) {
-      return await _gemini.parseExpenseFromHtml(html, categorias: categorias);
+      return _ensureRequiredSections(
+        await _gemini.parseExpenseFromHtml(
+          html,
+          categorias: categorias,
+        ),
+      );
     }
+  }
+
+  Map<String, dynamic> _ensureRequiredSections(Map<String, dynamic> data) {
+    final estabelecimento =
+        data['estabelecimento'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final itens = (data['itens'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final compra = data['compra'] as Map<String, dynamic>? ?? <String, dynamic>{};
+
+    return {
+      ...data,
+      'estabelecimento': estabelecimento,
+      'itens': itens,
+      'compra': compra,
+    };
   }
 
   /// Analisa o conteúdo HTML de uma NFC-e e extrai os dados.

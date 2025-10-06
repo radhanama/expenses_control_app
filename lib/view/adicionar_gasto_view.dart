@@ -105,7 +105,6 @@ class _AdicionarGastoViewState extends State<AdicionarGastoView> {
             context.watch<UsuarioViewModel>().usuarioLogado?.plano ??
                 PlanoUsuario.gratuito;
         final isGold = plano == PlanoUsuario.ouro;
-        final isSilver = plano == PlanoUsuario.prata;
         final isFree = plano == PlanoUsuario.gratuito;
         return Scaffold(
           appBar: AppBar(

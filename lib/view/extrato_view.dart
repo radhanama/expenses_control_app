@@ -125,10 +125,9 @@ class _ExtratoViewState extends State<ExtratoView> {
   }
 
   Widget _buildMonthPicker(BuildContext context) {
-    final monthLabel = toBeginningOfSentenceCase(
-          DateFormat('MMMM y', 'pt_BR').format(_selectedMonth),
-        ) ??
-        '';
+    final String monthLabel = toBeginningOfSentenceCase(
+      DateFormat('MMMM y', 'pt_BR').format(_selectedMonth),
+    );
 
     return OutlinedButton.icon(
       onPressed: () async {
@@ -137,7 +136,11 @@ class _ExtratoViewState extends State<ExtratoView> {
           initialDate: _selectedMonth,
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
-          locale: const Locale('pt', 'BR'),
+          monthPickerDialogSettings: const MonthPickerDialogSettings(
+            dialogSettings: PickerDialogSettings(
+              locale: Locale('pt', 'BR'),
+            ),
+          ),
         );
         if (picked != null) {
           setState(() => _selectedMonth = DateTime(picked.year, picked.month));

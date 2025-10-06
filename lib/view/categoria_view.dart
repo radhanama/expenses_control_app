@@ -1,4 +1,3 @@
-import 'package:expenses_control_app/view_model/usuario_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/categoria_view_model.dart';

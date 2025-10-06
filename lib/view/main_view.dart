@@ -1,7 +1,6 @@
 import 'package:expenses_control_app/view/adicionar_gasto_view.dart';
 import 'package:expenses_control_app/view/categoria_view.dart';
 import 'package:expenses_control_app/view/dashboard_view.dart';
-import 'package:expenses_control_app/view/gasto_view.dart';
 import 'package:expenses_control_app/view/meta_view.dart';
 import 'package:flutter/material.dart';
 import 'package:expenses_control_app/view/extrato_view.dart';
