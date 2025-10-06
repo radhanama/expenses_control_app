@@ -51,10 +51,11 @@ class CategoriaCacheViewModel extends ChangeNotifier {
 
   Categoria? obterCategoriaPorId(int? id) {
     if (id == null) return null;
-    return _categorias.firstWhere(
-      (c) => c.id == id,
-      orElse: () => _categorias.isNotEmpty ? _categorias.first : null,
-    );
+    try {
+      return _categorias.firstWhere((c) => c.id == id);
+    } on StateError {
+      return null;
+    }
   }
 
   Future<int> atualizarCategoria(CategoriaCache cache, int categoriaId) async {

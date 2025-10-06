@@ -52,6 +52,8 @@ dependencies:
   collection:
   month_picker_dialog:
   webview_flutter:
+  path_provider:
+  path:
 
 dev_dependencies:
   flutter_test:
